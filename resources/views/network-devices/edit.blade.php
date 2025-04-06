@@ -1,0 +1,171 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Editar Dispositivo de Red') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <form method="POST" action="{{ route('network-devices.update', $networkDevice) }}" class="space-y-6">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Tipo de Dispositivo (oculto) -->
+                            <input type="hidden" name="type" value="OLT">
+
+                            <!-- Estado -->
+                            <div>
+                                <x-input-label for="status" :value="__('Estado')" />
+                                <select id="status" name="status" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                    <option value="active" {{ $networkDevice->status == 'active' ? 'selected' : '' }}>Activo</option>
+                                    <option value="inactive" {{ $networkDevice->status == 'inactive' ? 'selected' : '' }}>Inactivo</option>
+                                    <option value="maintenance" {{ $networkDevice->status == 'maintenance' ? 'selected' : '' }}>En Mantenimiento</option>
+                                </select>
+                                <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                            </div>
+
+                            <!-- Nombre de la OLT -->
+                            <div>
+                                <x-input-label for="olt_name" :value="__('Nombre de la OLT')" />
+                                <x-text-input id="olt_name" class="block mt-1 w-full" type="text" name="olt_name" :value="old('olt_name', $networkDevice->olt_name)" required />
+                                <x-input-error :messages="$errors->get('olt_name')" class="mt-2" />
+                            </div>
+
+                            <!-- Marca y Modelo -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <x-input-label for="brand" :value="__('Marca')" />
+                                    <x-text-input id="brand" class="block mt-1 w-full" type="text" name="brand" :value="old('brand', $networkDevice->brand)" required />
+                                    <x-input-error :messages="$errors->get('brand')" class="mt-2" />
+                                </div>
+                                <div>
+                                    <x-input-label for="model" :value="__('Modelo')" />
+                                    <x-text-input id="model" class="block mt-1 w-full" type="text" name="model" :value="old('model', $networkDevice->model)" required />
+                                    <x-input-error :messages="$errors->get('model')" class="mt-2" />
+                                </div>
+                            </div>
+
+                            <!-- Detalles PON -->
+                            <div class="mt-4">
+                                <x-input-label :value="__('Detalles PON')" class="font-semibold text-lg" />
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                                    <div>
+                                        <x-input-label for="pon_number" :value="__('Número de PON')" />
+                                        <x-text-input id="pon_number" class="block mt-1 w-full" type="number" name="pon_number" :value="old('pon_number', $networkDevice->pon_number)" min="1" required />
+                                        <x-input-error :messages="$errors->get('pon_number')" class="mt-2" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="pon_types_supported" :value="__('Tipos de PON soportados')" />
+                                        <select id="pon_types_supported" name="pon_types_supported" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                            <option value="">Seleccionar...</option>
+                                            <option value="GPON" {{ old('pon_types_supported', $networkDevice->pon_types_supported) == 'GPON' ? 'selected' : '' }}>GPON</option>
+                                            <option value="EPON" {{ old('pon_types_supported', $networkDevice->pon_types_supported) == 'EPON' ? 'selected' : '' }}>EPON</option>
+                                            <option value="XGS-PON" {{ old('pon_types_supported', $networkDevice->pon_types_supported) == 'XGS-PON' ? 'selected' : '' }}>XGS-PON</option>
+                                            <option value="10G-EPON" {{ old('pon_types_supported', $networkDevice->pon_types_supported) == '10G-EPON' ? 'selected' : '' }}>10G-EPON</option>
+                                            <option value="Otro" {{ old('pon_types_supported', $networkDevice->pon_types_supported) == 'Otro' ? 'selected' : '' }}>Otro</option>
+                                        </select>
+                                        <x-input-error :messages="$errors->get('pon_types_supported')" class="mt-2" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="max_onts_per_pon" :value="__('Capacidad Máxima de ONTs por PON')" />
+                                        <x-text-input id="max_onts_per_pon" class="block mt-1 w-full" type="number" name="max_onts_per_pon" :value="old('max_onts_per_pon', $networkDevice->max_onts_per_pon)" min="1" />
+                                        <x-input-error :messages="$errors->get('max_onts_per_pon')" class="mt-2" />
+                                    </div>
+                                    
+                                </div>
+                            </div>
+
+                            <!-- Dirección IP -->
+                            <div>
+                                <x-input-label for="ip_address" :value="__('Dirección IP')" />
+                                <x-text-input id="ip_address" class="block mt-1 w-full" type="text" name="ip_address" :value="old('ip_address', $networkDevice->ip_address)" placeholder="192.168.1.1" />
+                                <x-input-error :messages="$errors->get('ip_address')" class="mt-2" />
+                            </div>
+
+                            <!-- Puerto -->
+                            <div>
+                                <x-input-label for="port" :value="__('Puerto')" />
+                                <x-text-input id="port" class="block mt-1 w-full" type="text" name="port" :value="old('port', $networkDevice->port)" />
+                                <x-input-error :messages="$errors->get('port')" class="mt-2" />
+                            </div>
+
+                            <!-- Servidor Asociado -->
+                            <div>
+                                <x-input-label for="associated_server" :value="__('Servidor Asociado')" />
+                                <x-text-input id="associated_server" class="block mt-1 w-full" type="text" name="associated_server" :value="old('associated_server', $networkDevice->associated_server)" />
+                                <x-input-error :messages="$errors->get('associated_server')" class="mt-2" />
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mt-4">
+                            <x-input-label for="description" :value="__('Descripción')" />
+                            <textarea id="description" name="description" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $networkDevice->description) }}</textarea>
+                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                        </div>
+
+                        <!-- Mapa para seleccionar coordenadas -->
+                        <div class="mt-6">
+                            <x-input-label :value="__('Ubicación (Seleccione en el mapa)')" />
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <x-input-label for="latitude" :value="__('Latitud')" />
+                                    <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude" :value="old('latitude', $networkDevice->latitude)" />
+                                    <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
+                                </div>
+                                <div>
+                                    <x-input-label for="longitude" :value="__('Longitud')" />
+                                    <x-text-input id="longitude" class="block mt-1 w-full" type="text" name="longitude" :value="old('longitude', $networkDevice->longitude)" />
+                                    <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600 mb-2">{{ __('Puedes buscar una ubicación directamente en el mapa o introducir las coordenadas manualmente.') }}</p>
+                            </div>
+                            
+                            <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
+                                @php
+                                    $lat = old('latitude', $networkDevice->latitude) ?? 7.883303;
+                                    $lng = old('longitude', $networkDevice->longitude) ?? -67.474317;
+                                    $mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3952.1124413179814!2d{$lng}!3d{$lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zN8KwNTInNTkuOSJOIDY3wrAyOCcyNy41Ilc!5e0!3m2!1ses-419!2sve!4v1719894275949!5m2!1ses-419!2sve";
+                                    if ($lat == 7.883303 && $lng == -67.474317) {
+                                        $mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252933.71551091907!2d-67.66476371796868!3d7.8833037999999945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e787d05a4247331%3A0x90acf64c02b12402!2sGbit%20Tecnology%20C.A!5e0!3m2!1ses-419!2sve!4v1719894275949!5m2!1ses-419!2sve";
+                                    }
+                                @endphp
+                                <iframe src="{{ $mapUrl }}" 
+                                    width="100%" 
+                                    height="100%" 
+                                    style="border:0;" 
+                                    allowfullscreen="" 
+                                    loading="lazy" 
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    class="rounded-lg">
+                                </iframe>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600">{{ __('Nota: Para obtener las coordenadas de un lugar específico, puedes hacer clic derecho en el mapa y seleccionar "¿Qué hay aquí?" para ver las coordenadas.') }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end mt-6">
+                            <a href="{{ route('network-devices.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150 mr-3">
+                                {{ __('Cancelar') }}
+                            </a>
+                            <x-primary-button>
+                                {{ __('Actualizar') }}
+                            </x-primary-button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
