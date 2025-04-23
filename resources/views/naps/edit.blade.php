@@ -10,143 +10,113 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form method="POST" action="{{ route('naps.update', $nap) }}" class="space-y-6">
-                        @csrf
+                        {{ csrf_field() }}
                         @method('PUT')
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Información General -->
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <!-- Número de NAP -->
                             <div>
-                                <h3 class="text-lg font-medium mb-4 pb-2 border-b border-gray-200">Información General</h3>
-                                
-                                <!-- Número de NAP -->
-                                <div class="mb-4">
-                                    <x-input-label for="nap_number" :value="__('Número de NAP')" />
-                                    <x-text-input id="nap_number" class="block mt-1 w-full" type="text" name="nap_number" :value="old('nap_number', $nap->nap_number)" required autofocus />
-                                    <x-input-error :messages="$errors->get('nap_number')" class="mt-2" />
-                                </div>
-
-                                <!-- Estado -->
-                                <div class="mb-4">
-                                    <x-input-label for="status" :value="__('Estado')" />
-                                    <select id="status" name="status" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        <option value="active" {{ old('status', $nap->status) == 'active' ? 'selected' : '' }}>Activo</option>
-                                        <option value="inactive" {{ old('status', $nap->status) == 'inactive' ? 'selected' : '' }}>Inactivo</option>
-                                        <option value="maintenance" {{ old('status', $nap->status) == 'maintenance' ? 'selected' : '' }}>En Mantenimiento</option>
-                                    </select>
-                                    <x-input-error :messages="$errors->get('status')" class="mt-2" />
-                                </div>
-
-                                <!-- Fecha de Instalación -->
-                                <div class="mb-4">
-                                    <x-input-label for="installation_date" :value="__('Fecha de Instalación')" />
-                                    <x-text-input id="installation_date" class="block mt-1 w-full" type="date" name="installation_date" :value="old('installation_date', $nap->installation_date ? $nap->installation_date->format('Y-m-d') : '')" />
-                                    <x-input-error :messages="$errors->get('installation_date')" class="mt-2" />
-                                </div>
-
-                                <!-- Descripción -->
-                                <div class="mb-4">
-                                    <x-input-label for="description" :value="__('Descripción')" />
-                                    <textarea id="description" name="description" rows="3" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $nap->description) }}</textarea>
-                                    <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                                </div>
+                                <x-input-label for="nap_number" :value="__('Número de NAP')" />
+                                <x-text-input id="nap_number" class="block mt-1 w-full" type="text" name="nap_number" :value="old('nap_number', $nap->nap_number)" required autofocus />
+                                <x-input-error :messages="$errors->get('nap_number')" class="mt-2" />
                             </div>
-
-                            <!-- Conectividad y Puertos -->
+                            
+                            <!-- Estado -->
                             <div>
-                                <h3 class="text-lg font-medium mb-4 pb-2 border-b border-gray-200">Conectividad y Puertos</h3>
-                                
-                                <!-- Cantidad de Puertos Totales -->
-                                <div class="mb-4">
-                                    <x-input-label for="total_ports" :value="__('Cantidad de Puertos Totales')" />
-                                    <x-text-input id="total_ports" class="block mt-1 w-full" type="number" name="total_ports" :value="old('total_ports', $nap->total_ports)" required min="1" />
-                                    <x-input-error :messages="$errors->get('total_ports')" class="mt-2" />
-                                </div>
-
-                                <!-- Cantidad de Puertos Disponibles -->
-                                <div class="mb-4">
-                                    <x-input-label for="available_ports" :value="__('Cantidad de Puertos Disponibles')" />
-                                    <x-text-input id="available_ports" class="block mt-1 w-full" type="number" name="available_ports" :value="old('available_ports', $nap->available_ports)" required min="0" />
-                                    <x-input-error :messages="$errors->get('available_ports')" class="mt-2" />
-                                </div>
-
-                                <!-- Tipo de Conector -->
-                                <div class="mb-4">
-                                    <x-input-label for="connector_type" :value="__('Tipo de Conector')" />
-                                    <select id="connector_type" name="connector_type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        @foreach($connectorTypes as $type)
-                                            <option value="{{ $type }}" {{ old('connector_type', $nap->connector_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
-                                        @endforeach
-                                    </select>
-                                    <x-input-error :messages="$errors->get('connector_type')" class="mt-2" />
-                                </div>
-
-                                <!-- Relación con OLT -->
-                                <h3 class="text-lg font-medium mb-4 mt-6 pb-2 border-b border-gray-200">Relación con OLT</h3>
-                                
-                                <!-- OLT Asociada -->
-                                <div class="mb-4">
-                                    <x-input-label for="network_device_id" :value="__('OLT Asociada')" />
-                                    <select id="network_device_id" name="network_device_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        <option value="">Seleccionar OLT...</option>
-                                        @foreach($networkDevices as $device)
-                                            <option value="{{ $device->id }}" {{ old('network_device_id', $nap->network_device_id) == $device->id ? 'selected' : '' }}>
-                                                {{ $device->brand }} {{ $device->model }} ({{ $device->ip_address }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <x-input-error :messages="$errors->get('network_device_id')" class="mt-2" />
-                                </div>
-
-                                <!-- PON Asociado -->
-                                <div class="mb-4">
-                                    <x-input-label for="pon_number" :value="__('PON Asociado')" />
-                                    <select id="pon_number" name="pon_number" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        <option value="">Seleccione primero una OLT</option>
-                                    </select>
-                                    <x-input-error :messages="$errors->get('pon_number')" class="mt-2" />
-                                </div>
+                                <x-input-label for="status" :value="__('Estado')" />
+                                <select id="status" name="status" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                    <option value="active" {{ old('status', $nap->status) == 'active' ? 'selected' : '' }}>Activo</option>
+                                    <option value="inactive" {{ old('status', $nap->status) == 'inactive' ? 'selected' : '' }}>Inactivo</option>
+                                    <option value="maintenance" {{ old('status', $nap->status) == 'maintenance' ? 'selected' : '' }}>En Mantenimiento</option>
+                                </select>
+                                <x-input-error :messages="$errors->get('status')" class="mt-2" />
                             </div>
-                        </div>
-
-                        <!-- Ubicación -->
-                        <div class="mt-6">
-                            <h3 class="text-lg font-medium mb-4 pb-2 border-b border-gray-200">Ubicación</h3>
+                        
+                            <!-- Fecha de Instalación -->
+                            <div>
+                                <x-input-label for="installation_date" :value="__('Fecha de Instalación')" />
+                                <x-text-input id="installation_date" class="block mt-1 w-full" type="date" name="installation_date" :value="old('installation_date', $nap->installation_date?->format('Y-m-d'))" />
+                                <x-input-error :messages="$errors->get('installation_date')" class="mt-2" />
+                            </div>
                             
                             <!-- Dirección -->
-                            <div class="mb-4">
+                            <div>
                                 <x-input-label for="address" :value="__('Dirección')" />
                                 <x-text-input id="address" class="block mt-1 w-full" type="text" name="address" :value="old('address', $nap->address)" required />
                                 <x-input-error :messages="$errors->get('address')" class="mt-2" />
                             </div>
-
+                            
                             <!-- Coordenadas -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <x-input-label for="latitude" :value="__('Latitud')" />
-                                    <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude" :value="old('latitude', $nap->latitude)" required />
-                                    <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <x-input-label for="longitude" :value="__('Longitud')" />
-                                    <x-text-input id="longitude" class="block mt-1 w-full" type="text" name="longitude" :value="old('longitude', $nap->longitude)" required />
-                                    <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
-                                </div>
+                            <div>
+                                <x-input-label for="latitude" :value="__('Latitud')" />
+                                <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude" :value="old('latitude', $nap->latitude)" required placeholder="-90 a 90" />
+                                <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
                             </div>
                             
-                            <div class="mt-4">
-                                <p class="text-sm text-gray-600 mb-2">{{ __('Puedes buscar una ubicación directamente en el mapa o introducir las coordenadas manualmente.') }}</p>
+                            <div>
+                                <x-input-label for="longitude" :value="__('Longitud')" />
+                                <x-text-input id="longitude" class="block mt-1 w-full" type="text" name="longitude" :value="old('longitude', $nap->longitude)" required placeholder="-180 a 180" />
+                                <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
                             </div>
                             
-                            <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
-                                <div id="map" class="w-full h-full"></div>
+                            <!-- Puertos -->
+                            <div>
+                                <x-input-label for="total_ports" :value="__('Puertos Totales')" />
+                                <x-text-input id="total_ports" class="block mt-1 w-full" type="number" name="total_ports" :value="old('total_ports', $nap->total_ports)" required min="1" />
+                                <x-input-error :messages="$errors->get('total_ports')" class="mt-2" />
+                            </div>
+                            
+                            <div>
+                                <x-input-label for="available_ports" :value="__('Puertos Disponibles')" />
+                                <x-text-input id="available_ports" class="block mt-1 w-full" type="number" name="available_ports" :value="old('available_ports', $nap->available_ports)" required min="0" />
+                                <x-input-error :messages="$errors->get('available_ports')" class="mt-2" />
+                            </div>
+                            
+                            <!-- Tipo de Conector -->
+                            <div>
+                                <x-input-label for="connector_type" :value="__('Tipo de Conector')" />
+                                <select id="connector_type" name="connector_type" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                    @foreach($connectorTypes as $type)
+                                        <option value="{{ $type }}" {{ old('connector_type', $nap->connector_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('connector_type')" class="mt-2" />
+                            </div>
+                            
+                            <!-- OLT Asociada -->
+                            <div>
+                                <x-input-label for="network_device_id" :value="__('OLT Asociada')" />
+                                <select id="network_device_id" name="network_device_id" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                    <option value="">Seleccionar OLT...</option>
+                                    @foreach($networkDevices as $device)
+                                        <option value="{{ $device->id }}" {{ old('network_device_id', $nap->network_device_id) == $device->id ? 'selected' : '' }}>
+                                            {{ $device->olt_name }} ({{ $device->pon_number }} PONs)
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('network_device_id')" class="mt-2" />
+                            </div>
+                            
+                            <!-- PON Asociado -->
+                            <div>
+                                <x-input-label for="pon_number" :value="__('PON Asociado')" />
+                                <select id="pon_number" name="pon_number" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                    <option value="">Seleccione primero una OLT</option>
+                                </select>
+                                <x-input-error :messages="$errors->get('pon_number')" class="mt-2" />
+                                <p id="pon_help_text" class="text-sm text-gray-500 mt-1 hidden">Seleccione un puerto PON disponible de la OLT.</p>
+                            </div>
+                            
+                            <!-- Descripción -->
+                            <div class="col-span-1 md:col-span-2">
+                                <x-input-label for="description" :value="__('Descripción')" />
+                                <textarea id="description" name="description" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full" rows="3">{{ old('description', $nap->description) }}</textarea>
+                                <x-input-error :messages="$errors->get('description')" class="mt-2" />
                             </div>
                         </div>
-
-                        <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('naps.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150 mr-3">
-                                {{ __('Cancelar') }}
-                            </a>
-                            <x-primary-button>
+                        
+                        <div class="flex items-center justify-end mt-4">
+                            <x-primary-button class="ml-4">
                                 {{ __('Actualizar NAP') }}
                             </x-primary-button>
                         </div>
@@ -155,94 +125,74 @@
             </div>
         </div>
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar el mapa
-            function initMap() {
-                const defaultLocation = { 
-                    lat: {{ old('latitude', $nap->latitude) ?: 7.8833 }}, 
-                    lng: {{ old('longitude', $nap->longitude) ?: -67.6648 }}
-                };
-                
-                const map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 13,
-                    center: defaultLocation,
-                });
-                
-                let marker = new google.maps.Marker({
-                    position: defaultLocation,
-                    map: map,
-                    draggable: true,
-                });
-                
-                // Actualizar coordenadas al arrastrar el marcador
-                google.maps.event.addListener(marker, 'dragend', function() {
-                    document.getElementById('latitude').value = marker.getPosition().lat();
-                    document.getElementById('longitude').value = marker.getPosition().lng();
-                });
-                
-                // Permitir hacer clic en el mapa para colocar el marcador
-                google.maps.event.addListener(map, 'click', function(event) {
-                    marker.setPosition(event.latLng);
-                    document.getElementById('latitude').value = event.latLng.lat();
-                    document.getElementById('longitude').value = event.latLng.lng();
-                });
-                
-                // Actualizar el mapa cuando se cambien manualmente las coordenadas
-                const latField = document.getElementById('latitude');
-                const lngField = document.getElementById('longitude');
-                
-                latField.addEventListener('change', updateMarkerFromFields);
-                lngField.addEventListener('change', updateMarkerFromFields);
-                
-                function updateMarkerFromFields() {
-                    if (latField.value && lngField.value) {
-                        const position = {
-                            lat: parseFloat(latField.value),
-                            lng: parseFloat(lngField.value)
-                        };
-                        marker.setPosition(position);
-                        map.setCenter(position);
-                    }
-                }
-            }
-            
-            // Cargar el API de Google Maps
-            if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-                const script = document.createElement('script');
-                script.src = "https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&callback=initMap";
-                script.async = true;
-                script.defer = true;
-                window.initMap = initMap;
-                document.head.appendChild(script);
-            } else {
-                initMap();
-            }
-            
-            // Manejo de la relación entre OLT y PON
             const networkDeviceSelect = document.getElementById('network_device_id');
             const ponSelect = document.getElementById('pon_number');
-            const currentPon = "{{ old('pon_number', $nap->pon_number) }}";
+            const ponHelpText = document.getElementById('pon_help_text');
+            const totalPortsInput = document.getElementById('total_ports');
+            const availablePortsInput = document.getElementById('available_ports');
             
-            function loadPonNumbers(deviceId, callback) {
+            // Variables para almacenar el PON actual de la NAP
+            const currentPonNumber = "{{ $nap->pon_number }}";
+            const currentNetworkDeviceId = "{{ $nap->network_device_id }}";
+            
+            // Validar que los puertos disponibles no excedan los totales
+            totalPortsInput.addEventListener('change', function() {
+                const totalPorts = parseInt(this.value);
+                const availablePorts = parseInt(availablePortsInput.value);
+                
+                if (availablePorts > totalPorts) {
+                    availablePortsInput.value = totalPorts;
+                }
+                
+                availablePortsInput.setAttribute('max', totalPorts);
+            });
+            
+            networkDeviceSelect.addEventListener('change', function() {
+                const deviceId = this.value;
+                
                 if (!deviceId) {
                     ponSelect.innerHTML = '<option value="">Seleccione primero una OLT</option>';
+                    ponHelpText.classList.add('hidden');
                     return;
                 }
                 
                 // Limpiar el select de PON
                 ponSelect.innerHTML = '<option value="">Cargando...</option>';
+                ponHelpText.classList.add('hidden');
                 
                 // Obtener los PONs disponibles para esta OLT
                 fetch(`/naps/get-pon-numbers/${deviceId}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la respuesta del servidor');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         ponSelect.innerHTML = '';
                         
                         if (data.length === 0) {
                             ponSelect.innerHTML = '<option value="">No hay PONs disponibles</option>';
+                            ponHelpText.textContent = 'Esta OLT no tiene puertos PON configurados.';
+                            ponHelpText.classList.remove('hidden');
                             return;
+                        }
+                        
+                        // Contar cuántos PONs están disponibles (excluyendo el PON actual de esta NAP)
+                        const availablePons = data.filter(pon => !pon.disabled || (deviceId == currentNetworkDeviceId && pon.value == currentPonNumber)).length;
+                        
+                        if (availablePons === 0) {
+                            ponHelpText.textContent = 'Todos los puertos PON de esta OLT están ocupados.';
+                            ponHelpText.classList.remove('hidden');
+                        } else if (deviceId == currentNetworkDeviceId) {
+                            ponHelpText.textContent = `${availablePons} puerto(s) PON disponible(s) de un total de ${data.length}, incluyendo el puerto actual.`;
+                            ponHelpText.classList.remove('hidden');
+                        } else {
+                            ponHelpText.textContent = `${availablePons} puerto(s) PON disponible(s) de un total de ${data.length}.`;
+                            ponHelpText.classList.remove('hidden');
                         }
                         
                         // Añadir opción por defecto
@@ -254,50 +204,34 @@
                         // Añadir las opciones de PON
                         data.forEach(pon => {
                             const option = document.createElement('option');
-                            option.value = pon;
-                            option.textContent = pon;
+                            option.value = pon.value;
+                            option.textContent = pon.name;
                             
-                            // Seleccionar el PON actual si coincide
-                            if (pon === currentPon) {
-                                option.selected = true;
+                            // Si es el PON actual de esta NAP, permitir seleccionarlo aunque esté ocupado
+                            if (pon.disabled && !(deviceId == currentNetworkDeviceId && pon.value == currentPonNumber)) {
+                                option.disabled = true;
                             }
                             
                             ponSelect.appendChild(option);
                         });
                         
-                        if (callback) callback();
+                        // Seleccionar el valor anterior si existe
+                        const oldValue = "{{ old('pon_number', $nap->pon_number) }}";
+                        if (oldValue) {
+                            ponSelect.value = oldValue;
+                        }
                     })
                     .catch(error => {
                         console.error('Error al cargar los PONs:', error);
                         ponSelect.innerHTML = '<option value="">Error al cargar PONs</option>';
+                        ponHelpText.textContent = 'Ocurrió un error al cargar los puertos PON. Por favor, intente nuevamente.';
+                        ponHelpText.classList.remove('hidden');
                     });
-            }
-            
-            networkDeviceSelect.addEventListener('change', function() {
-                loadPonNumbers(this.value);
             });
             
-            // Validación de puertos disponibles vs totales
-            const totalPortsInput = document.getElementById('total_ports');
-            const availablePortsInput = document.getElementById('available_ports');
-            
-            function validatePorts() {
-                const total = parseInt(totalPortsInput.value) || 0;
-                const available = parseInt(availablePortsInput.value) || 0;
-                
-                if (available > total) {
-                    availablePortsInput.setCustomValidity('Los puertos disponibles no pueden ser mayores que los puertos totales');
-                } else {
-                    availablePortsInput.setCustomValidity('');
-                }
-            }
-            
-            totalPortsInput.addEventListener('input', validatePorts);
-            availablePortsInput.addEventListener('input', validatePorts);
-            
-            // Cargar los PONs iniciales si ya hay un dispositivo seleccionado
+            // Cargar PONs iniciales si hay una OLT seleccionada
             if (networkDeviceSelect.value) {
-                loadPonNumbers(networkDeviceSelect.value);
+                networkDeviceSelect.dispatchEvent(new Event('change'));
             }
         });
     </script>

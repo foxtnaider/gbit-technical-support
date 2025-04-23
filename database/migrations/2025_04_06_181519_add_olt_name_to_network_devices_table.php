@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('network_devices', function (Blueprint $table) {
-            //
+            $table->string('olt_name')->nullable()->after('id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('network_devices', function (Blueprint $table) {
-            //
+            $table->dropColumn('olt_name');
         });
     }
 };

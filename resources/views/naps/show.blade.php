@@ -37,11 +37,6 @@
                                 </div>
                                 
                                 <div>
-                                    <p class="text-sm font-medium text-gray-500">Nombre</p>
-                                    <p class="mt-1">{{ $nap->name ?: 'N/A' }}</p>
-                                </div>
-                                
-                                <div>
                                     <p class="text-sm font-medium text-gray-500">Estado</p>
                                     <p class="mt-1">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $nap->status === 'active' ? 'bg-green-100 text-green-800' : ($nap->status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
@@ -50,20 +45,12 @@
                                     </p>
                                 </div>
                                 
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Marca</p>
-                                    <p class="mt-1">{{ $nap->brand ?: 'N/A' }}</p>
-                                </div>
-                                
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Modelo</p>
-                                    <p class="mt-1">{{ $nap->model ?: 'N/A' }}</p>
-                                </div>
-                                
+                                @if($nap->installation_date)
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">Fecha de Instalación</p>
-                                    <p class="mt-1">{{ $nap->installation_date ? $nap->installation_date->format('d/m/Y') : 'N/A' }}</p>
+                                    <p class="mt-1">{{ $nap->installation_date->format('d/m/Y') }}</p>
                                 </div>
+                                @endif
                                 
                                 @if($nap->description)
                                 <div>

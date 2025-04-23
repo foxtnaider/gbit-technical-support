@@ -52,4 +52,24 @@ class Nap extends Model
             default => $this->status,
         };
     }
+    
+    /**
+     * Verifica si un PON específico ya está asignado a otra NAP para la misma OLT.
+     *
+     * @param int $networkDeviceId ID del dispositivo de red (OLT)
+     * @param string $ponNumber Número de PON
+     * @param int|null $excludeNapId ID de la NAP a excluir de la verificación (útil para ediciones)
+     * @return bool
+     */
+    public static function isPonAssigned($networkDeviceId, $ponNumber, $excludeNapId = null)
+    {
+        $query = self::where('network_device_id', $networkDeviceId)
+                    ->where('pon_number', $ponNumber);
+                    
+        if ($excludeNapId) {
+            $query->where('id', '!=', $excludeNapId);
+        }
+        
+        return $query->exists();
+    }
 }
