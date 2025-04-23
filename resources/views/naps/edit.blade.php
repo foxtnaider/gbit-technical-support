@@ -25,13 +25,6 @@
                                     <x-input-error :messages="$errors->get('nap_number')" class="mt-2" />
                                 </div>
 
-                                <!-- Nombre de la NAP -->
-                                <div class="mb-4">
-                                    <x-input-label for="name" :value="__('Nombre de la NAP')" />
-                                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name', $nap->name)" />
-                                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                                </div>
-
                                 <!-- Estado -->
                                 <div class="mb-4">
                                     <x-input-label for="status" :value="__('Estado')" />
@@ -41,20 +34,6 @@
                                         <option value="maintenance" {{ old('status', $nap->status) == 'maintenance' ? 'selected' : '' }}>En Mantenimiento</option>
                                     </select>
                                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
-                                </div>
-
-                                <!-- Marca y Modelo -->
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <x-input-label for="brand" :value="__('Marca')" />
-                                        <x-text-input id="brand" class="block mt-1 w-full" type="text" name="brand" :value="old('brand', $nap->brand)" />
-                                        <x-input-error :messages="$errors->get('brand')" class="mt-2" />
-                                    </div>
-                                    <div>
-                                        <x-input-label for="model" :value="__('Modelo')" />
-                                        <x-text-input id="model" class="block mt-1 w-full" type="text" name="model" :value="old('model', $nap->model)" />
-                                        <x-input-error :messages="$errors->get('model')" class="mt-2" />
-                                    </div>
                                 </div>
 
                                 <!-- Fecha de Instalación -->

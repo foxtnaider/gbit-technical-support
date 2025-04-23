@@ -11,11 +11,8 @@ class Nap extends Model
 
     protected $fillable = [
         'nap_number',
-        'name',
         'description',
         'status',
-        'brand',
-        'model',
         'installation_date',
         'address',
         'latitude',

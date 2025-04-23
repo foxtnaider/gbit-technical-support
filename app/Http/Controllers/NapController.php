@@ -24,7 +24,7 @@ class NapController extends Controller
     public function create()
     {
         $networkDevices = NetworkDevice::where('type', 'olt')->where('status', 'active')->get();
-        $connectorTypes = ['SC', 'LC', 'FC', 'ST', 'MPO', 'MTP', 'Other'];
+        $connectorTypes = ['UPC', 'APC', 'SC', 'LC', 'FC', 'ST', 'MPO', 'MTP', 'Other'];
         return view('naps.create', compact('networkDevices', 'connectorTypes'));
     }
 
@@ -35,18 +35,15 @@ class NapController extends Controller
     {
         $validated = $request->validate([
             'nap_number' => 'required|string|unique:naps,nap_number',
-            'name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,maintenance',
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
             'installation_date' => 'nullable|date',
             'address' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'total_ports' => 'required|integer|min:1',
             'available_ports' => 'required|integer|lte:total_ports',
-            'connector_type' => 'required|in:SC,LC,FC,ST,MPO,MTP,Other',
+            'connector_type' => 'required|in:UPC,APC,SC,LC,FC,ST,MPO,MTP,Other',
             'network_device_id' => 'required|exists:network_devices,id',
             'pon_number' => 'required|string',
         ]);
@@ -71,7 +68,7 @@ class NapController extends Controller
     public function edit(Nap $nap)
     {
         $networkDevices = NetworkDevice::where('type', 'olt')->get();
-        $connectorTypes = ['SC', 'LC', 'FC', 'ST', 'MPO', 'MTP', 'Other'];
+        $connectorTypes = ['UPC', 'APC', 'SC', 'LC', 'FC', 'ST', 'MPO', 'MTP', 'Other'];
         return view('naps.edit', compact('nap', 'networkDevices', 'connectorTypes'));
     }
 
@@ -82,18 +79,15 @@ class NapController extends Controller
     {
         $validated = $request->validate([
             'nap_number' => ['required', 'string', Rule::unique('naps')->ignore($nap)],
-            'name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,maintenance',
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
             'installation_date' => 'nullable|date',
             'address' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'total_ports' => 'required|integer|min:1',
             'available_ports' => 'required|integer|lte:total_ports',
-            'connector_type' => 'required|in:SC,LC,FC,ST,MPO,MTP,Other',
+            'connector_type' => 'required|in:UPC,APC,SC,LC,FC,ST,MPO,MTP,Other',
             'network_device_id' => 'required|exists:network_devices,id',
             'pon_number' => 'required|string',
         ]);
