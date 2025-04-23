@@ -48,6 +48,30 @@
                                 </div>
                             </div>
 
+                            <!-- Dirección -->
+                            <div class="mt-4">
+                                <x-input-label for="address" :value="__('Dirección')" />
+                                <x-text-input id="address" class="block mt-1 w-full" type="text" name="address" :value="old('address')" />
+                                <x-input-error :messages="$errors->get('address')" class="mt-2" />
+                                <p class="text-xs text-gray-500 mt-1">{{ __('Ubicación física donde se encuentra instalada la OLT') }}</p>
+                            </div>
+
+                            <!-- Credenciales de Acceso -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <x-input-label for="username" :value="__('Usuario')" />
+                                    <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" />
+                                    <x-input-error :messages="$errors->get('username')" class="mt-2" />
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('Usuario para acceder remotamente a la OLT') }}</p>
+                                </div>
+                                <div>
+                                    <x-input-label for="password" :value="__('Contraseña')" />
+                                    <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" :value="old('password')" />
+                                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('Contraseña para acceder remotamente a la OLT') }}</p>
+                                </div>
+                            </div>
+
                             <!-- Detalles PON -->
                             <div class="mt-4">
                                 <x-input-label :value="__('Detalles PON')" class="font-semibold text-lg" />
@@ -99,38 +123,58 @@
                                 <x-text-input id="associated_server" class="block mt-1 w-full" type="text" name="associated_server" :value="old('associated_server')" />
                                 <x-input-error :messages="$errors->get('associated_server')" class="mt-2" />
                             </div>
-                        </div>
 
-                        <!-- Descripción -->
-                        <div class="mt-4">
-                            <x-input-label for="description" :value="__('Descripción')" />
-                            <textarea id="description" name="description" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                        </div>
-
-                        <!-- Mapa para seleccionar coordenadas -->
-                        <div class="mt-6">
-                            <x-input-label :value="__('Ubicación (Seleccione en el mapa)')" />
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <x-input-label for="latitude" :value="__('Latitud')" />
-                                    <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude" :value="old('latitude')" />
-                                    <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <x-input-label for="longitude" :value="__('Longitud')" />
-                                    <x-text-input id="longitude" class="block mt-1 w-full" type="text" name="longitude" :value="old('longitude')" />
-                                    <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
-                                </div>
-                            </div>
-                            
+                            <!-- Umbrales de Potencia -->
                             <div class="mt-4">
-                                <p class="text-sm text-gray-600 mb-2">{{ __('Puedes buscar una ubicación directamente en el mapa o introducir las coordenadas manualmente.') }}</p>
+                                <x-input-label :value="__('Umbrales de Potencia')" class="font-semibold text-lg" />
+                                <p class="text-sm text-gray-600 mb-2">{{ __('Valores críticos de referencia para monitoreo de potencia (en dBm).') }}</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <x-input-label for="power_threshold_low" :value="__('Umbral Bajo')" />
+                                        <x-text-input id="power_threshold_low" class="block mt-1 w-full" type="number" step="0.01" name="power_threshold_low" :value="old('power_threshold_low', -8)" />
+                                        <x-input-error :messages="$errors->get('power_threshold_low')" class="mt-2" />
+                                        <p class="text-xs text-gray-500 mt-1">{{ __('Valor por defecto: -8 dBm') }}</p>
+                                    </div>
+                                    <div>
+                                        <x-input-label for="power_threshold_high" :value="__('Umbral Alto')" />
+                                        <x-text-input id="power_threshold_high" class="block mt-1 w-full" type="number" step="0.01" name="power_threshold_high" :value="old('power_threshold_high', -27)" />
+                                        <x-input-error :messages="$errors->get('power_threshold_high')" class="mt-2" />
+                                        <p class="text-xs text-gray-500 mt-1">{{ __('Valor por defecto: -27 dBm') }}</p>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252933.71551091907!2d-67.66476371796868!3d7.8833037999999945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e787d05a4247331%3A0x90acf64c02b12402!2sGbit%20Tecnology%20C.A!5e0!3m2!1ses-419!2sve!4v1719894275949!5m2!1ses-419!2sve" 
+
+                            <!-- Descripción -->
+                            <div class="mt-4">
+                                <x-input-label for="description" :value="__('Descripción')" />
+                                <textarea id="description" name="description" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
+                                <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                            </div>
+
+                            <!-- Mapa para seleccionar coordenadas -->
+                            <div class="mt-6">
+                                <x-input-label :value="__('Ubicación (Seleccione en el mapa)')" />
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <x-input-label for="latitude" :value="__('Latitud')" />
+                                        <x-text-input id="latitude" class="block mt-1 w-full" type="text" name="latitude" :value="old('latitude')" />
+                                        <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="longitude" :value="__('Longitud')" />
+                                        <x-text-input id="longitude" class="block mt-1 w-full" type="text" name="longitude" :value="old('longitude')" />
+                                        <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <p class="text-sm text-gray-600 mb-2">{{ __('Puedes buscar una ubicación directamente en el mapa o introducir las coordenadas manualmente.') }}</p>
+                                </div>
+                                
+                                <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252933.71551091907!2d-67.66476371796868!3d7.8833037999999945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e787d05a4247331%3A0x90acf64c02b12402!2sGbit%20Tecnology%20C.A!5e0!3m2!1ses-419!2sve!4v1719894275949!5m2!1ses-419!2sve" 
                                     width="100%" 
                                     height="100%" 
                                     style="border:0;" 
