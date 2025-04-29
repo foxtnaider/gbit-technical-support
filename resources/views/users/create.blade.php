@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gbit-blue-800 dark:text-white leading-tight">
+            <h2 class="font-semibold text-xl text-gbit-blue-800 leading-tight">
                 {{ __('Crear Nuevo Usuario') }}
             </h2>
-            <a href="{{ route('users.index') }}" class="px-4 py-2 bg-gray-200 dark:bg-gbit-blue-700 hover:bg-gray-300 dark:hover:bg-gbit-blue-600 text-gbit-blue-800 dark:text-white rounded-md transition">
+            <a href="{{ route('users.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gbit-blue-800 rounded-md transition">
                 Volver a la lista
             </a>
         </div>
@@ -12,8 +12,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gbit-blue-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gbit-blue-800 dark:text-white">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gbit-blue-800">
                     <form method="POST" action="{{ route('users.store') }}" class="space-y-6">
                         @csrf
 
@@ -48,7 +48,7 @@
                         <!-- Rol -->
                         <div class="mt-4">
                             <x-input-label for="role" :value="__('Rol')" />
-                            <select id="role" name="role" class="border-gray-300 dark:border-gray-700 dark:bg-gbit-blue-700 dark:text-white focus:border-gbit-orange-500 dark:focus:border-gbit-orange-600 focus:ring-gbit-orange-500 dark:focus:ring-gbit-orange-600 rounded-md shadow-sm block mt-1 w-full">
+                            <select id="role" name="role" class="border-gray-300 focus:border-gbit-orange-500 focus:ring-gbit-orange-500 rounded-md shadow-sm block mt-1 w-full">
                                 <option value="admin">Administrador</option>
                                 <option value="support">Soporte</option>
                             </select>

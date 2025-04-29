@@ -23,7 +23,7 @@
                             <!-- Estado -->
                             <div>
                                 <x-input-label for="status" :value="__('Estado')" />
-                                <select id="status" name="status" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                <select id="status" name="status" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                                     <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Activo</option>
                                     <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactivo</option>
                                     <option value="maintenance" {{ old('status') == 'maintenance' ? 'selected' : '' }}>En Mantenimiento</option>
@@ -74,7 +74,7 @@
                             <!-- Tipo de Conector -->
                             <div>
                                 <x-input-label for="connector_type" :value="__('Tipo de Conector')" />
-                                <select id="connector_type" name="connector_type" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                <select id="connector_type" name="connector_type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                                     @foreach($connectorTypes as $type)
                                         <option value="{{ $type }}" {{ old('connector_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
                                     @endforeach
@@ -85,7 +85,7 @@
                             <!-- OLT Asociada -->
                             <div>
                                 <x-input-label for="network_device_id" :value="__('OLT Asociada')" />
-                                <select id="network_device_id" name="network_device_id" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                <select id="network_device_id" name="network_device_id" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                                     <option value="">Seleccionar OLT...</option>
                                     @foreach($networkDevices as $device)
                                         <option value="{{ $device->id }}" {{ old('network_device_id') == $device->id ? 'selected' : '' }}>
@@ -99,7 +99,7 @@
                             <!-- PON Asociado -->
                             <div>
                                 <x-input-label for="pon_number" :value="__('PON Asociado')" />
-                                <select id="pon_number" name="pon_number" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full">
+                                <select id="pon_number" name="pon_number" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                                     <option value="">Seleccione primero una OLT</option>
                                 </select>
                                 <x-input-error :messages="$errors->get('pon_number')" class="mt-2" />
@@ -109,7 +109,7 @@
                             <!-- Descripción -->
                             <div class="col-span-1 md:col-span-2">
                                 <x-input-label for="description" :value="__('Descripción')" />
-                                <textarea id="description" name="description" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm block mt-1 w-full" rows="3">{{ old('description') }}</textarea>
+                                <textarea id="description" name="description" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" rows="3">{{ old('description') }}</textarea>
                                 <x-input-error :messages="$errors->get('description')" class="mt-2" />
                             </div>
                         </div>
