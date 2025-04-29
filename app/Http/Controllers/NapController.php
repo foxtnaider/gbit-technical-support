@@ -7,6 +7,7 @@ use App\Models\NetworkDevice;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class NapController extends Controller
 {
@@ -54,14 +55,7 @@ class NapController extends Controller
             'pon_number' => 'required|string',
         ]);
         
-        // Verificar si el PON ya está asignado a otra NAP para esta OLT
-        if (Nap::isPonAssigned($request->network_device_id, $request->pon_number)) {
-            throw ValidationException::withMessages([
-                'pon_number' => 'Este puerto PON ya está asignado a otra NAP en esta OLT.'
-            ]);
-        }
-        
-        // Verificar si la OLT tiene suficientes puertos PON
+        // Solo se valida que el número de PON no exceda la cantidad disponible en la OLT
         $networkDevice = NetworkDevice::findOrFail($request->network_device_id);
         $ponNumber = (int) filter_var($request->pon_number, FILTER_SANITIZE_NUMBER_INT);
         
@@ -120,24 +114,14 @@ class NapController extends Controller
             'pon_number' => 'required|string',
         ]);
         
-        // Solo verificar si el PON ya está asignado cuando se cambia la OLT o el número de PON
-        if ($request->network_device_id != $nap->network_device_id || $request->pon_number != $nap->pon_number) {
-            // Verificar si el PON ya está asignado a otra NAP para esta OLT
-            if (Nap::isPonAssigned($request->network_device_id, $request->pon_number, $nap->id)) {
-                throw ValidationException::withMessages([
-                    'pon_number' => 'Este puerto PON ya está asignado a otra NAP en esta OLT.'
-                ]);
-            }
-            
-            // Verificar si la OLT tiene suficientes puertos PON
-            $networkDevice = NetworkDevice::findOrFail($request->network_device_id);
-            $ponNumber = (int) filter_var($request->pon_number, FILTER_SANITIZE_NUMBER_INT);
-            
-            if ($ponNumber > $networkDevice->pon_number) {
-                throw ValidationException::withMessages([
-                    'pon_number' => 'El número de puerto PON seleccionado excede la cantidad de puertos disponibles en esta OLT.'
-                ]);
-            }
+        // Solo se valida que el número de PON no exceda la cantidad disponible en la OLT
+        $networkDevice = NetworkDevice::findOrFail($request->network_device_id);
+        $ponNumber = (int) filter_var($request->pon_number, FILTER_SANITIZE_NUMBER_INT);
+        
+        if ($ponNumber > $networkDevice->pon_number) {
+            throw ValidationException::withMessages([
+                'pon_number' => 'El número de puerto PON seleccionado excede la cantidad de puertos disponibles en esta OLT.'
+            ]);
         }
 
         $nap->update($validated);
@@ -164,32 +148,22 @@ class NapController extends Controller
     {
         $networkDevice = NetworkDevice::findOrFail($networkDeviceId);
         $ponNumbers = [];
-        
-        // Obtener los PONs que ya están asignados a NAPs
-        $assignedPons = Nap::where('network_device_id', $networkDeviceId)
-            ->pluck('pon_number')
+        // Obtener la cantidad de NAPs asociadas a cada PON
+        $napCounts = Nap::where('network_device_id', $networkDeviceId)
+            ->select('pon_number', DB::raw('count(*) as total'))
+            ->groupBy('pon_number')
+            ->pluck('total', 'pon_number')
             ->toArray();
-        
-        // Generar números PON basados en la cantidad de PON del dispositivo
+
         for ($i = 1; $i <= $networkDevice->pon_number; $i++) {
             $ponName = "PON-" . str_pad($i, 2, '0', STR_PAD_LEFT);
-            
-            // Verificar si este PON ya está asignado a una NAP
-            if (in_array($ponName, $assignedPons)) {
-                $ponNumbers[] = [
-                    'name' => $ponName . ' (Ocupado)',
-                    'value' => $ponName,
-                    'disabled' => true
-                ];
-            } else {
-                $ponNumbers[] = [
-                    'name' => $ponName,
-                    'value' => $ponName,
-                    'disabled' => false
-                ];
-            }
+            $count = $napCounts[$ponName] ?? 0;
+            $ponNumbers[] = [
+                'name' => $count > 0 ? "$ponName (NAPs: $count)" : $ponName,
+                'value' => $ponName,
+                'disabled' => false // Nunca se deshabilita
+            ];
         }
-        
         return response()->json($ponNumbers);
     }
 }
