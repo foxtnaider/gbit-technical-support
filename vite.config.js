@@ -9,9 +9,9 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: '0.0.0.0',
+        host: process.env.VITE_DEV_SERVER_URL ? 'localhost' : null,
         hmr: {
-            host: 'localhost'
+            host: process.env.VITE_DEV_SERVER_URL ? 'localhost' : null
         },
     },
 });
