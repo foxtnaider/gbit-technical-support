@@ -48,6 +48,24 @@
                                 </div>
                             </div>
 
+                            <!-- Servidor Asociado -->
+                            <div class="mt-4">
+                                <x-input-label for="associated_server" :value="__('Servidor Asociado')" />
+                                <div class="relative">
+                                    <select id="associated_server" name="associated_server" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                        <option value="">Seleccione un servidor</option>
+                                    </select>
+                                    <div id="server-loading" class="absolute right-2 top-1/2 transform -translate-y-1/2 hidden">
+                                        <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <x-input-error :messages="$errors->get('associated_server')" class="mt-2" />
+                                <p class="text-xs text-gray-500 mt-1">{{ __('Servidor al que está asociado este dispositivo') }}</p>
+                            </div>
+
                             <!-- Dirección -->
                             <div class="mt-4">
                                 <x-input-label for="address" :value="__('Dirección')" />
@@ -126,13 +144,6 @@
                                 <x-input-label for="port" :value="__('Puerto')" />
                                 <x-text-input id="port" class="block mt-1 w-full" type="text" name="port" :value="old('port')" />
                                 <x-input-error :messages="$errors->get('port')" class="mt-2" />
-                            </div>
-
-                            <!-- Servidor Asociado -->
-                            <div>
-                                <x-input-label for="associated_server" :value="__('Servidor Asociado')" />
-                                <x-text-input id="associated_server" class="block mt-1 w-full" type="text" name="associated_server" :value="old('associated_server')" />
-                                <x-input-error :messages="$errors->get('associated_server')" class="mt-2" />
                             </div>
 
                             <!-- Umbrales de Potencia -->
@@ -232,5 +243,112 @@
             eyeIcon.classList.toggle('hidden');
             eyeSlashIcon.classList.toggle('hidden');
         });
+
+        // Cargar servidores desde la API
+        loadServers();
     });
+
+    // Función para cargar los servidores desde la API
+    function loadServers() {
+        const serverSelect = document.getElementById('associated_server');
+        const loadingIndicator = document.getElementById('server-loading');
+        
+        // Mostrar indicador de carga
+        loadingIndicator.classList.remove('hidden');
+        
+        // Obtener la URL base de la API desde la variable de entorno
+        const apiUrl = '{{ env("API_GBIT_ADM") }}' + '/api/servers';
+        const apiToken = '{{ env("X_API_TOKEN") }}';
+        
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-TOKEN': apiToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de la API');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Ocultar indicador de carga
+            loadingIndicator.classList.add('hidden');
+            
+            if (data.success && data.data && Array.isArray(data.data)) {
+                // Limpiar opciones existentes excepto la primera
+                while (serverSelect.options.length > 1) {
+                    serverSelect.remove(1);
+                }
+                
+                // Agregar nuevas opciones
+                data.data.forEach(server => {
+                    const option = document.createElement('option');
+                    option.value = server.id;
+                    option.textContent = `${server.nombre} (${server.ip}:${server.puerto})`;
+                    serverSelect.appendChild(option);
+                });
+                
+                // Inicializar select2 para búsqueda
+                if (typeof $ !== 'undefined' && $.fn.select2) {
+                    $(serverSelect).select2({
+                        placeholder: 'Seleccione un servidor',
+                        allowClear: true
+                    });
+                } else {
+                    // Cargar select2 si no está disponible
+                    loadSelect2();
+                }
+            } else {
+                console.error('Formato de respuesta inválido:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar servidores:', error);
+            loadingIndicator.classList.add('hidden');
+            
+            // Mostrar mensaje de error
+            const errorOption = document.createElement('option');
+            errorOption.value = '';
+            errorOption.textContent = 'Error al cargar servidores';
+            serverSelect.appendChild(errorOption);
+        });
+    }
+
+    // Función para cargar select2 si no está disponible
+    function loadSelect2() {
+        // Cargar jQuery si no está disponible
+        if (typeof $ === 'undefined') {
+            const jqueryScript = document.createElement('script');
+            jqueryScript.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+            jqueryScript.onload = function() {
+                loadSelect2Library();
+            };
+            document.head.appendChild(jqueryScript);
+        } else {
+            loadSelect2Library();
+        }
+    }
+
+    function loadSelect2Library() {
+        // Cargar CSS de Select2
+        const select2CSS = document.createElement('link');
+        select2CSS.rel = 'stylesheet';
+        select2CSS.href = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css';
+        document.head.appendChild(select2CSS);
+        
+        // Cargar JavaScript de Select2
+        const select2Script = document.createElement('script');
+        select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+        select2Script.onload = function() {
+            // Inicializar select2 en el selector de servidores
+            $('#associated_server').select2({
+                placeholder: 'Seleccione un servidor',
+                allowClear: true
+            });
+        };
+        document.head.appendChild(select2Script);
+    }
 </script>

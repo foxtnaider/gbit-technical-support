@@ -83,7 +83,31 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">Servidor Asociado</p>
-                                    <p class="text-base">{{ $networkDevice->associated_server ?: 'No disponible' }}</p>
+                                    <div id="server-details">
+                                        <div class="flex items-center">
+                                            <div id="server-loading" class="ml-2">
+                                                <svg class="animate-spin h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div id="server-info" class="mt-2 hidden">
+                                            <div class="bg-gray-100 p-3 rounded-md text-sm">
+                                                <p><span class="font-medium">Nombre:</span> <span id="server-nombre"></span></p>
+                                                <p><span class="font-medium">IP:</span> <span id="server-ip"></span></p>
+                                                <p><span class="font-medium">Puerto:</span> <span id="server-puerto"></span></p>
+                                                <p><span class="font-medium">Tipo:</span> <span id="server-tipo"></span></p>
+                                                <p><span class="font-medium">Dirección:</span> <span id="server-direccion"></span></p>
+                                            </div>
+                                        </div>
+                                        <div id="server-error" class="mt-2 hidden">
+                                            <p class="text-sm text-red-500">No se pudo cargar la información del servidor.</p>
+                                        </div>
+                                        <div id="server-no-data" class="mt-2 hidden">
+                                            <p class="text-sm text-gray-500">No hay servidor asociado.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -134,3 +158,69 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cargar detalles del servidor si hay un servidor asociado
+        const serverId = '{{ $networkDevice->associated_server }}';
+        if (serverId && serverId !== '') {
+            loadServerDetails(serverId);
+        } else {
+            document.getElementById('server-loading').classList.add('hidden');
+            document.getElementById('server-no-data').classList.remove('hidden');
+        }
+    });
+
+    // Función para cargar los detalles del servidor desde la API
+    function loadServerDetails(serverId) {
+        const serverLoading = document.getElementById('server-loading');
+        const serverInfo = document.getElementById('server-info');
+        const serverError = document.getElementById('server-error');
+        
+        // Mostrar indicador de carga (ya está visible por defecto)
+        
+        // Obtener la URL base de la API desde la variable de entorno
+        const apiUrl = '{{ env("API_GBIT_ADM") }}' + '/api/servers/' + serverId;
+        const apiToken = '{{ env("X_API_TOKEN") }}';
+        
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-TOKEN': apiToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de la API');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Ocultar indicador de carga
+            serverLoading.classList.add('hidden');
+            
+            if (data.success && data.data) {
+                // Mostrar información del servidor
+                const server = data.data;
+                
+                document.getElementById('server-nombre').textContent = server.nombre || 'No disponible';
+                document.getElementById('server-ip').textContent = server.ip || 'No disponible';
+                document.getElementById('server-puerto').textContent = server.puerto || 'No disponible';
+                document.getElementById('server-tipo').textContent = server.tipo || 'No disponible';
+                document.getElementById('server-direccion').textContent = server.direccion || 'No disponible';
+                
+                // Mostrar el contenedor de información
+                serverInfo.classList.remove('hidden');
+            } else {
+                console.error('Formato de respuesta inválido:', data);
+                serverError.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar detalles del servidor:', error);
+            serverLoading.classList.add('hidden');
+            serverError.classList.remove('hidden');
+        });
+    }
+</script>

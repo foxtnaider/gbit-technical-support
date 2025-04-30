@@ -83,7 +83,11 @@
                                 
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">OLT Asociada</p>
-                                    <p class="mt-1">{{ $nap->networkDevice->brand }} {{ $nap->networkDevice->model }} ({{ $nap->networkDevice->ip_address }})</p>
+                                    @if($nap->networkDevice)
+                                        <p class="mt-1">{{ $nap->networkDevice->brand }} {{ $nap->networkDevice->model }} ({{ $nap->networkDevice->ip_address }})</p>
+                                    @else
+                                        <p class="mt-1"><span class="text-gray-400">No asignado</span></p>
+                                    @endif
                                 </div>
                                 
                                 <div>
