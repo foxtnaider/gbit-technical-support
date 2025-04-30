@@ -9,9 +9,10 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: process.env.VITE_DEV_SERVER_URL ? 'localhost' : null,
+        host: '0.0.0.0',
         hmr: {
-            host: process.env.VITE_DEV_SERVER_URL ? 'localhost' : null
+            host: process.env.VITE_HMR_HOST || 'localhost',
+            port: process.env.VITE_HMR_PORT || 5173
         },
     },
 });
