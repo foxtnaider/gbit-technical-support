@@ -21,7 +21,9 @@ class Nap extends Model
         'available_ports',
         'connector_type',
         'network_device_id',
-        'pon_number'
+        'pon_number',
+        'reference_power',
+        'fdt_distance'
     ];
 
     protected $casts = [
@@ -30,6 +32,8 @@ class Nap extends Model
         'available_ports' => 'integer',
         'latitude' => 'float',
         'longitude' => 'float',
+        'reference_power' => 'float',
+        'fdt_distance' => 'float',
     ];
 
     /**

@@ -142,8 +142,42 @@
                             <!-- Puerto -->
                             <div>
                                 <x-input-label for="port" :value="__('Puerto')" />
-                                <x-text-input id="port" class="block mt-1 w-full" type="text" name="port" :value="old('port')" />
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                                    <div>
+                                        <x-text-input id="port" class="block w-full" type="text" name="port" :value="old('port')" placeholder="22, 80, 443, etc." />
+                                    </div>
+                                    <div>
+                                        <select id="port_type" name="port_type" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                            <option value="">Seleccionar tipo...</option>
+                                            <option value="ssh" {{ old('port_type') == 'ssh' ? 'selected' : '' }}>SSH</option>
+                                            <option value="web" {{ old('port_type') == 'web' ? 'selected' : '' }}>Web</option>
+                                            <option value="telnet" {{ old('port_type') == 'telnet' ? 'selected' : '' }}>Telnet</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <x-input-error :messages="$errors->get('port')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('port_type')" class="mt-2" />
+                            </div>
+
+                            <!-- Puerto Secundario -->
+                            <div class="mt-4">
+                                <x-input-label for="secondary_port" :value="__('Puerto Secundario')" />
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                                    <div>
+                                        <x-text-input id="secondary_port" class="block w-full" type="text" name="secondary_port" :value="old('secondary_port')" placeholder="22, 80, 443, etc." />
+                                    </div>
+                                    <div>
+                                        <select id="secondary_port_type" name="secondary_port_type" class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                            <option value="">Seleccionar tipo...</option>
+                                            <option value="ssh" {{ old('secondary_port_type') == 'ssh' ? 'selected' : '' }}>SSH</option>
+                                            <option value="web" {{ old('secondary_port_type') == 'web' ? 'selected' : '' }}>Web</option>
+                                            <option value="telnet" {{ old('secondary_port_type') == 'telnet' ? 'selected' : '' }}>Telnet</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <x-input-error :messages="$errors->get('secondary_port')" class="mt-2" />
+                                <x-input-error :messages="$errors->get('secondary_port_type')" class="mt-2" />
+                                <p class="text-xs text-gray-500 mt-1">{{ __('Puerto adicional para conectarse al dispositivo (opcional)') }}</p>
                             </div>
 
                             <!-- Umbrales de Potencia -->

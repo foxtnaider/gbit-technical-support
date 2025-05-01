@@ -53,6 +53,8 @@ class NapController extends Controller
             'connector_type' => 'required|in:UPC,APC,SC,LC,FC,ST,MPO,MTP,Other',
             'network_device_id' => 'required|exists:network_devices,id',
             'pon_number' => 'required|string',
+            'reference_power' => 'nullable|numeric',
+            'fdt_distance' => 'nullable|numeric|min:0',
         ]);
         
         // Solo se valida que el número de PON no exceda la cantidad disponible en la OLT
@@ -112,6 +114,8 @@ class NapController extends Controller
             'connector_type' => 'required|in:UPC,APC,SC,LC,FC,ST,MPO,MTP,Other',
             'network_device_id' => 'required|exists:network_devices,id',
             'pon_number' => 'required|string',
+            'reference_power' => 'nullable|numeric',
+            'fdt_distance' => 'nullable|numeric|min:0',
         ]);
         
         // Solo se valida que el número de PON no exceda la cantidad disponible en la OLT

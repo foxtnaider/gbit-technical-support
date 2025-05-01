@@ -27,7 +27,8 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca/Modelo</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servidor</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PON</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tecnología</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
@@ -39,8 +40,10 @@
                                 @forelse ($devices as $device)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div class="font-medium text-gray-900">{{ $device->brand }}</div>
-                                            <div class="text-sm text-gray-500">{{ $device->model }}</div>
+                                            <div class="font-medium text-gray-900">{{ $device->olt_name ?? 'N/A' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div class="font-medium text-gray-900 server-name" data-server-id="{{ $device->associated_server }}">Cargando...</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $device->pon_number ?? 'N/A' }}
@@ -84,7 +87,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             No hay dispositivos de red registrados.
                                         </td>
                                     </tr>
@@ -100,4 +103,78 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Función para cargar los datos de servidores
+        function loadServerData() {
+            // Obtener la URL base de la API desde la variable de entorno
+            const apiUrl = '{{ env("API_GBIT_ADM") }}' + '/api/servers';
+            const apiToken = '{{ env("X_API_TOKEN") }}';
+
+            // Realizar la solicitud a la API
+            fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-TOKEN': apiToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const servers = data.data;
+                    // Obtener todos los elementos con la clase server-name
+                    const serverElements = document.querySelectorAll('.server-name');
+                    
+                    // Actualizar cada elemento con el nombre del servidor correspondiente
+                    serverElements.forEach(element => {
+                        const serverId = element.getAttribute('data-server-id');
+                        if (serverId) {
+                            // Buscar el servidor con el ID correspondiente
+                            const server = servers.find(s => s.id == serverId);
+                            if (server) {
+                                element.textContent = server.nombre;
+                            } else {
+                                element.textContent = 'No encontrado';
+                            }
+                        } else {
+                            element.textContent = 'N/A';
+                        }
+                    });
+                } else {
+                    console.error('Error al obtener la lista de servidores:', data.message);
+                    const serverElements = document.querySelectorAll('.server-name');
+                    serverElements.forEach(element => {
+                        element.textContent = 'Error al cargar';
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+                const serverElements = document.querySelectorAll('.server-name');
+                serverElements.forEach(element => {
+                    element.textContent = 'Error al cargar';
+                });
+            });
+        }
+
+        // Cargar datos cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', loadServerData);
+        
+        // Soporte para Turbolinks si está presente
+        if (typeof Turbolinks !== 'undefined') {
+            document.addEventListener('turbolinks:load', loadServerData);
+        }
+        
+        // Soporte para Laravel Livewire si está presente
+        if (typeof window.Livewire !== 'undefined') {
+            document.addEventListener('livewire:load', loadServerData);
+            document.addEventListener('livewire:update', loadServerData);
+        }
+        
+        // Asegurarse de que la función se ejecute incluso si la página ya está cargada
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(loadServerData, 1);
+        }
+    </script>
 </x-app-layout>

@@ -113,6 +113,21 @@
                                 <textarea id="description" name="description" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" rows="3">{{ old('description', $nap->description) }}</textarea>
                                 <x-input-error :messages="$errors->get('description')" class="mt-2" />
                             </div>
+                            
+                            <!-- Potencia de Referencia -->
+                            <div>
+                                <x-input-label for="reference_power" :value="__('Potencia de Referencia (dBm)')" />
+                                <x-text-input id="reference_power" class="block mt-1 w-full" type="number" name="reference_power" :value="old('reference_power', $nap->reference_power)" step="0.01" placeholder="-25.00" />
+                                <p class="text-sm text-gray-500 mt-1">Valor típico en negativo, ej: -25.00 dBm</p>
+                                <x-input-error :messages="$errors->get('reference_power')" class="mt-2" />
+                            </div>
+                            
+                            <!-- Distancia desde FDT -->
+                            <div>
+                                <x-input-label for="fdt_distance" :value="__('Distancia desde FDT (metros)')" />
+                                <x-text-input id="fdt_distance" class="block mt-1 w-full" type="number" name="fdt_distance" :value="old('fdt_distance', $nap->fdt_distance)" step="0.01" />
+                                <x-input-error :messages="$errors->get('fdt_distance')" class="mt-2" />
+                            </div>
                         </div>
                         
                         <div class="flex items-center justify-end mt-4">

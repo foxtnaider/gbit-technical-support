@@ -18,71 +18,128 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h3 class="text-lg font-semibold mb-4">Información General</h3>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Tipo</p>
-                                    <p class="text-base">{{ strtoupper($networkDevice->type) }}</p>
-                                </div>
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Marca</p>
-                                    <p class="text-base">{{ $networkDevice->brand }}</p>
-                                </div>
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Modelo</p>
-                                    <p class="text-base">{{ $networkDevice->model }}</p>
-                                </div>
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Estado</p>
-                                    <p class="text-base">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $networkDevice->status === 'active' ? 'bg-green-100 text-green-800' : ($networkDevice->status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                            {{ $networkDevice->status === 'active' ? 'Activo' : ($networkDevice->status === 'maintenance' ? 'Mantenimiento' : 'Inactivo') }}
-                                        </span>
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Descripción</p>
-                                    <p class="text-base">{{ $networkDevice->description ?: 'No disponible' }}</p>
+                <div class="p-4 text-gray-900">
+                    <!-- Estado y nombre principal -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <div class="flex flex-col">
+                            <h1 class="text-2xl font-bold">{{ $networkDevice->olt_name ?: ($networkDevice->brand . ' ' . $networkDevice->model) }}</h1>
+                            <p class="text-gray-500">{{ $networkDevice->ip_address }}</p>
+                        </div>
+                        <div class="mt-2 md:mt-0">
+                            <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full {{ $networkDevice->status === 'active' ? 'bg-green-100 text-green-800' : ($networkDevice->status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                {{ $networkDevice->status === 'active' ? 'Activo' : ($networkDevice->status === 'maintenance' ? 'Mantenimiento' : 'Inactivo') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Pestañas de navegación -->
+                    <div class="border-b border-gray-200 mb-4">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button class="tab-button border-blue-500 text-blue-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="general">
+                                Información General
+                            </button>
+                            <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="connectivity">
+                                Conectividad
+                            </button>
+                            <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="pon">
+                                Detalles PON
+                            </button>
+                            <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="location">
+                                Ubicación
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Contenido de las pestañas -->
+                    <div class="tab-content">
+                        <!-- Pestaña: Información General -->
+                        <div id="general-tab" class="tab-pane">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-medium text-gray-700 mb-3">Información Básica</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Tipo</p>
+                                            <p class="text-base">{{ strtoupper($networkDevice->type) }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Nombre OLT</p>
+                                            <p class="text-base">{{ $networkDevice->olt_name ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Marca</p>
+                                            <p class="text-base">{{ $networkDevice->brand }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Modelo</p>
+                                            <p class="text-base">{{ $networkDevice->model }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Descripción</p>
+                                            <p class="text-base">{{ $networkDevice->description ?: 'No disponible' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div>
-                            <h3 class="text-lg font-semibold mb-4">Detalles PON</h3>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Número de PON</p>
-                                    <p class="text-base">{{ $networkDevice->pon_number ?: 'No disponible' }}</p>
+
+                        <!-- Pestaña: Conectividad -->
+                        <div id="connectivity-tab" class="tab-pane hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-medium text-gray-700 mb-3">Acceso al Dispositivo</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Dirección IP</p>
+                                            <p class="text-base">{{ $networkDevice->ip_address ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Puerto</p>
+                                            <p class="text-base">{{ $networkDevice->port ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Tipo de Puerto</p>
+                                            <p class="text-base">{{ $networkDevice->port_type ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Puerto Secundario</p>
+                                            <p class="text-base">{{ $networkDevice->secondary_port ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Tipo de Puerto Secundario</p>
+                                            <p class="text-base">{{ $networkDevice->secondary_port_type ?: 'No disponible' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Tipos de PON soportados</p>
-                                    <p class="text-base">{{ $networkDevice->pon_types_supported ?: 'No disponible' }}</p>
-                                </div>
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Capacidad Máxima de ONTs por PON</p>
-                                    <p class="text-base">{{ $networkDevice->max_onts_per_pon ?: 'No disponible' }}</p>
-                                </div>
-                                
-                            </div>
-                            
-                            <h3 class="text-lg font-semibold my-4">Conectividad</h3>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Dirección IP</p>
-                                    <p class="text-base">{{ $networkDevice->ip_address ?: 'No disponible' }}</p>
-                                </div>
-                                <div class="mb-4">
-                                    <p class="text-sm font-medium text-gray-500">Puerto</p>
-                                    <p class="text-base">{{ $networkDevice->port ?: 'No disponible' }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Servidor Asociado</p>
+
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-medium text-gray-700 mb-3">Credenciales</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Nombre de Usuario</p>
+                                            <p class="text-base">{{ $networkDevice->username ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Contraseña</p>
+                                            <div class="flex items-center">
+                                                <p id="password-display" class="text-base">••••••••</p>
+                                                <button type="button" id="toggle-password" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="eye-icon">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="eye-off-icon">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h3 class="font-medium text-gray-700 my-3">Servidor Asociado</h3>
                                     <div id="server-details">
                                         <div class="flex items-center">
                                             <div id="server-loading" class="ml-2">
@@ -111,46 +168,101 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-8">
-                        <h3 class="text-lg font-semibold mb-4">Ubicación</h3>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Latitud</p>
-                                    <p class="text-base">{{ $networkDevice->latitude ?: 'No disponible' }}</p>
+
+                        <!-- Pestaña: Detalles PON -->
+                        <div id="pon-tab" class="tab-pane hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-medium text-gray-700 mb-3">Configuración PON</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Número de PON</p>
+                                            <p class="text-base">{{ $networkDevice->pon_number ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Tipos de PON soportados</p>
+                                            <p class="text-base">{{ $networkDevice->pon_types_supported ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Capacidad Máxima de ONTs por PON</p>
+                                            <p class="text-base">{{ $networkDevice->max_onts_per_pon ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Umbral de Potencia Bajo</p>
+                                            <p class="text-base">{{ $networkDevice->power_threshold_low ?: 'No disponible' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Umbral de Potencia Alto</p>
+                                            <p class="text-base">{{ $networkDevice->power_threshold_high ?: 'No disponible' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Longitud</p>
-                                    <p class="text-base">{{ $networkDevice->longitude ?: 'No disponible' }}</p>
+
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-medium text-gray-700 mb-3">Estado de Monitoreo</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Última verificación</p>
+                                            <p class="text-base">{{ $networkDevice->last_checked_at ? $networkDevice->last_checked_at->format('d/m/Y H:i:s') : 'Nunca' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500">Estado del último ping</p>
+                                            <p class="text-base">
+                                                @if($networkDevice->last_ping_status === 'success')
+                                                    <span class="text-green-600">Exitoso</span>
+                                                @elseif($networkDevice->last_ping_status === 'failed')
+                                                    <span class="text-red-600">Fallido</span>
+                                                @else
+                                                    <span class="text-gray-500">No disponible</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            @if($networkDevice->latitude && $networkDevice->longitude)
-                                <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
-                                    <div id="map" class="w-full h-full"></div>
+                        </div>
+
+                        <!-- Pestaña: Ubicación -->
+                        <div id="location-tab" class="tab-pane hidden">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h3 class="font-medium text-gray-700 mb-3">Coordenadas</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Dirección</p>
+                                        <p class="text-base">{{ $networkDevice->address ?: 'No disponible' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Coordenadas</p>
+                                        <p class="text-base">{{ $networkDevice->location ?: 'No disponible' }}</p>
+                                    </div>
                                 </div>
                                 
-                                <script>
-                                    function initMap() {
-                                        const location = { lat: {{ $networkDevice->latitude }}, lng: {{ $networkDevice->longitude }} };
-                                        const map = new google.maps.Map(document.getElementById("map"), {
-                                            zoom: 15,
-                                            center: location,
-                                        });
-                                        
-                                        const marker = new google.maps.Marker({
-                                            position: location,
-                                            map: map,
-                                            title: "{{ $networkDevice->brand }} {{ $networkDevice->model }}",
-                                        });
-                                    }
-                                </script>
-                                <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&callback=initMap"></script>
-                            @else
-                                <p class="text-gray-500 italic">No hay coordenadas disponibles para mostrar el mapa.</p>
-                            @endif
+                                @if($networkDevice->latitude && $networkDevice->longitude)
+                                    <div id="map" class="w-full h-96 rounded-lg"></div>
+                                    <script>
+                                        function initMap() {
+                                            const location = { 
+                                                lat: {{ $networkDevice->latitude }}, 
+                                                lng: {{ $networkDevice->longitude }} 
+                                            };
+                                            
+                                            const map = new google.maps.Map(document.getElementById("map"), {
+                                                zoom: 15,
+                                                center: location,
+                                            });
+                                            
+                                            const marker = new google.maps.Marker({
+                                                position: location,
+                                                map: map,
+                                                title: "{{ $networkDevice->brand }} {{ $networkDevice->model }}",
+                                            });
+                                        }
+                                    </script>
+                                    <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&callback=initMap"></script>
+                                @else
+                                    <p class="text-gray-500 italic">No hay coordenadas disponibles para mostrar el mapa.</p>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,6 +273,31 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Sistema de pestañas
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Desactivar todas las pestañas
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                tabPanes.forEach(pane => {
+                    pane.classList.add('hidden');
+                });
+                
+                // Activar la pestaña seleccionada
+                button.classList.remove('border-transparent', 'text-gray-500');
+                button.classList.add('border-blue-500', 'text-blue-600');
+                
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+            });
+        });
+        
         // Cargar detalles del servidor si hay un servidor asociado
         const serverId = '{{ $networkDevice->associated_server }}';
         if (serverId && serverId !== '') {
@@ -169,6 +306,29 @@
             document.getElementById('server-loading').classList.add('hidden');
             document.getElementById('server-no-data').classList.remove('hidden');
         }
+        
+        // Configurar el botón para mostrar/ocultar contraseña
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        const passwordDisplay = document.getElementById('password-display');
+        const eyeIcon = document.getElementById('eye-icon');
+        const eyeOffIcon = document.getElementById('eye-off-icon');
+        const password = '{{ $networkDevice->password }}';
+        
+        let passwordVisible = false;
+        
+        togglePasswordBtn.addEventListener('click', function() {
+            passwordVisible = !passwordVisible;
+            
+            if (passwordVisible) {
+                passwordDisplay.textContent = password || 'No disponible';
+                eyeIcon.classList.add('hidden');
+                eyeOffIcon.classList.remove('hidden');
+            } else {
+                passwordDisplay.textContent = '••••••••';
+                eyeIcon.classList.remove('hidden');
+                eyeOffIcon.classList.add('hidden');
+            }
+        });
     });
 
     // Función para cargar los detalles del servidor desde la API

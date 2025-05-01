@@ -56,7 +56,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 @if($nap->networkDevice)
-                                                    {{ $nap->networkDevice->brand }} {{ $nap->networkDevice->model }}
+                                                    {{ $nap->networkDevice->olt_name ?? $nap->networkDevice->ip_address }}
                                                 @else
                                                     <span class="text-gray-400">No asignado</span>
                                                 @endif
