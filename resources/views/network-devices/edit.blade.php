@@ -15,8 +15,8 @@
 
                         <!-- Sistema de pestañas -->
                         <div class="mb-6">
-                            <div class="border-b border-gray-200">
-                                <nav class="-mb-px flex space-x-6">
+                            <div class="border-b border-gray-200 overflow-x-auto pb-1">
+                                <nav class="-mb-px flex space-x-6 min-w-max">
                                     <button type="button" class="tab-button border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="info-general">
                                         Información General
                                     </button>

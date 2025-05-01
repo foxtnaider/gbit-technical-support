@@ -36,8 +36,8 @@
                     </div>
 
                     <!-- Pestañas de navegación -->
-                    <div class="border-b border-gray-200 mb-4">
-                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <div class="border-b border-gray-200 mb-4 overflow-x-auto pb-1">
+                        <nav class="-mb-px flex space-x-8 min-w-max" aria-label="Tabs">
                             <button class="tab-button border-blue-500 text-blue-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="general">
                                 Información General
                             </button>
