@@ -251,23 +251,14 @@
                                 </div>
                                 
                                 <div class="mt-4">
-                                    <p class="text-sm text-gray-600 mb-2">{{ __('Puedes buscar una ubicación directamente en el mapa o introducir las coordenadas manualmente.') }}</p>
+                                    <p class="text-sm text-gray-600 mb-2">{{ __('Haz clic en el mapa para seleccionar una ubicación y obtener automáticamente las coordenadas.') }}</p>
                                 </div>
                                 
-                                <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
-                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252933.71551091907!2d-67.66476371796868!3d7.8833037999999945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e787d05a4247331%3A0x90acf64c02b12402!2sGbit%20Tecnology%20C.A!5e0!3m2!1ses-419!2sve!4v1719894275949!5m2!1ses-419!2sve" 
-                                        width="100%" 
-                                        height="100%" 
-                                        style="border:0;" 
-                                        allowfullscreen="" 
-                                        loading="lazy" 
-                                        referrerpolicy="no-referrer-when-downgrade"
-                                        class="rounded-lg">
-                                    </iframe>
-                                </div>
+                                <!-- Mapa interactivo con Leaflet -->
+                                <div id="map" class="w-full h-96 rounded-lg overflow-hidden shadow-lg"></div>
                                 
                                 <div class="mt-4">
-                                    <p class="text-sm text-gray-600">{{ __('Nota: Para obtener las coordenadas de un lugar específico, puedes hacer clic derecho en el mapa y seleccionar "¿Qué hay aquí?" para ver las coordenadas.') }}</p>
+                                    <p class="text-sm text-gray-600">{{ __('Nota: Puedes hacer clic en cualquier punto del mapa o arrastrar el marcador para obtener las coordenadas exactas.') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -288,58 +279,80 @@
 </x-app-layout>
 
 <script>
-    // Función para inicializar el mapa de Google Maps
+    // Función para inicializar el mapa con Leaflet
     function initMap() {
         if (document.getElementById('map')) {
-            const lat = {{ old('latitude') ?? 7.883303 }};
-            const lng = {{ old('longitude') ?? -67.474317 }};
-            const location = { lat: lat, lng: lng };
-            
-            const map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 15,
-                center: location,
-            });
-            
-            const marker = new google.maps.Marker({
-                position: location,
-                map: map,
-                draggable: true,
-                title: "Nueva ubicación"
-            });
-            
-            // Actualizar los campos de latitud y longitud cuando se arrastra el marcador
-            google.maps.event.addListener(marker, 'dragend', function() {
-                document.getElementById('latitude').value = marker.getPosition().lat().toFixed(6);
-                document.getElementById('longitude').value = marker.getPosition().lng().toFixed(6);
-            });
-            
-            // Actualizar el marcador cuando se cambian los campos de latitud y longitud
-            document.getElementById('latitude').addEventListener('change', updateMarkerPosition);
-            document.getElementById('longitude').addEventListener('change', updateMarkerPosition);
-            
-            function updateMarkerPosition() {
-                const lat = parseFloat(document.getElementById('latitude').value);
-                const lng = parseFloat(document.getElementById('longitude').value);
-                
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    const position = new google.maps.LatLng(lat, lng);
-                    marker.setPosition(position);
-                    map.setCenter(position);
-                }
+            // Añadir los estilos de Leaflet al head
+            if (!document.getElementById('leaflet-css')) {
+                const leafletCSS = document.createElement('link');
+                leafletCSS.id = 'leaflet-css';
+                leafletCSS.rel = 'stylesheet';
+                leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+                leafletCSS.crossOrigin = '';
+                document.head.appendChild(leafletCSS);
+            }
+
+            // Cargar Leaflet JS si no está cargado
+            if (typeof L === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+                script.crossOrigin = '';
+                script.onload = function() {
+                    initLeafletMap();
+                };
+                document.head.appendChild(script);
+            } else {
+                initLeafletMap();
             }
         }
     }
 
-    // Cargar el API de Google Maps
-    function loadGoogleMapsAPI() {
-        if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-            const script = document.createElement('script');
-            script.src = "https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&callback=initMap";
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        } else {
-            initMap();
+    function initLeafletMap() {
+        // Obtener valores iniciales de latitud y longitud
+        let lat = {{ old('latitude') ?? 7.883303 }};
+        let lng = {{ old('longitude') ?? -67.474317 }};
+
+        // Inicializar el mapa
+        const map = L.map('map').setView([lat, lng], 15);
+
+        // Añadir capa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Añadir marcador
+        const marker = L.marker([lat, lng], {
+            draggable: true
+        }).addTo(map);
+
+        // Actualizar campos cuando se mueve el marcador
+        marker.on('dragend', function(event) {
+            const position = marker.getLatLng();
+            document.getElementById('latitude').value = position.lat.toFixed(6);
+            document.getElementById('longitude').value = position.lng.toFixed(6);
+        });
+
+        // Actualizar marcador cuando se hace clic en el mapa
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+            document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+        });
+
+        // Actualizar el marcador cuando se cambian los campos de latitud y longitud
+        document.getElementById('latitude').addEventListener('change', updateMarkerPosition);
+        document.getElementById('longitude').addEventListener('change', updateMarkerPosition);
+        
+        function updateMarkerPosition() {
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lng = parseFloat(document.getElementById('longitude').value);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                marker.setLatLng([lat, lng]);
+                map.setView([lat, lng]);
+            }
         }
     }
 
@@ -360,13 +373,15 @@
             .then(data => {
                 serverLoading.classList.add('hidden');
                 
-                if (data.status === 'success') {
-                    const servers = data.data;
+                // Verificar si la respuesta contiene datos de servidores, independientemente del formato exacto
+                if (data && (data.data || data.servers)) {
+                    // Obtener la lista de servidores (adaptarse a diferentes formatos de respuesta)
+                    const servers = data.data || data.servers || [];
                     
                     servers.forEach(server => {
                         const option = document.createElement('option');
                         option.value = server.id;
-                        option.textContent = server.name;
+                        option.textContent = server.name || server.nombre;
                         
                         if (server.id == {{ old('associated_server') ?? 'null' }}) {
                             option.selected = true;
@@ -376,13 +391,14 @@
                     });
                     
                     // Inicializar Select2 si está disponible
-                    if (typeof $.fn.select2 !== 'undefined') {
-                        $(serverSelect).select2({
+                    if (typeof window.jQuery !== 'undefined' && typeof window.jQuery.fn !== 'undefined' && typeof window.jQuery.fn.select2 !== 'undefined') {
+                        window.jQuery(serverSelect).select2({
                             placeholder: 'Seleccione un servidor',
                             allowClear: true
                         });
                     }
-                } else {
+                } else if (data.message) {
+                    // Solo mostrar error si realmente hay un mensaje de error
                     console.error('Error al cargar servidores:', data.message);
                 }
             })
@@ -436,10 +452,10 @@
             });
         });
 
-        // Cargar Google Maps cuando se haga clic en la pestaña de ubicación
+        // Cargar el mapa cuando se haga clic en la pestaña de ubicación
         const ubicacionTab = document.querySelector('[data-tab="ubicacion"]');
         if (ubicacionTab) {
-            ubicacionTab.addEventListener('click', loadGoogleMapsAPI);
+            ubicacionTab.addEventListener('click', initMap);
         }
         
         // También cargar si estamos en la pestaña de ubicación inicialmente

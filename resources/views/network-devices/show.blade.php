@@ -233,35 +233,20 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-500">Coordenadas</p>
-                                        <p class="text-base">{{ $networkDevice->location ?: 'No disponible' }}</p>
+                                        <p class="text-base">
+                                            @if($networkDevice->latitude && $networkDevice->longitude)
+                                                {{ $networkDevice->latitude }}, {{ $networkDevice->longitude }}
+                                            @else
+                                                No disponible
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                                 
-                                @if($networkDevice->latitude && $networkDevice->longitude)
-                                    <div id="map" class="w-full h-96 rounded-lg"></div>
-                                    <script>
-                                        function initMap() {
-                                            const location = { 
-                                                lat: {{ $networkDevice->latitude }}, 
-                                                lng: {{ $networkDevice->longitude }} 
-                                            };
-                                            
-                                            const map = new google.maps.Map(document.getElementById("map"), {
-                                                zoom: 15,
-                                                center: location,
-                                            });
-                                            
-                                            const marker = new google.maps.Marker({
-                                                position: location,
-                                                map: map,
-                                                title: "{{ $networkDevice->brand }} {{ $networkDevice->model }}",
-                                            });
-                                        }
-                                    </script>
-                                    <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&callback=initMap"></script>
-                                @else
-                                    <p class="text-gray-500 italic">No hay coordenadas disponibles para mostrar el mapa.</p>
-                                @endif
+                                <!-- Mapa interactivo con Leaflet -->
+                                <div id="map" class="w-full h-96 rounded-lg overflow-hidden shadow-lg mb-4"></div>
+                                
+                                <p class="text-sm text-gray-600">El mapa muestra la ubicación exacta del dispositivo según las coordenadas registradas.</p>
                             </div>
                         </div>
                     </div>
@@ -329,6 +314,22 @@
                 eyeOffIcon.classList.add('hidden');
             }
         });
+        
+        // Inicializar el mapa con Leaflet
+        @if($networkDevice->latitude && $networkDevice->longitude)
+            const map = L.map('map').setView([{{ $networkDevice->latitude }}, {{ $networkDevice->longitude }}], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+                subdomains: ['a', 'b', 'c']
+            }).addTo(map);
+            
+            L.marker([{{ $networkDevice->latitude }}, {{ $networkDevice->longitude }}]).addTo(map)
+                .bindPopup('{{ $networkDevice->olt_name ?: ($networkDevice->brand . " " . $networkDevice->model) }}')
+                .openPopup();
+        @else
+            // Si no hay coordenadas, mostrar un mensaje en el contenedor del mapa
+            document.getElementById('map').innerHTML = '<div class="flex items-center justify-center h-full bg-gray-100 rounded-lg"><p class="text-gray-500 italic">No hay coordenadas disponibles para mostrar el mapa.</p></div>';
+        @endif
     });
 
     // Función para cargar los detalles del servidor desde la API
@@ -384,3 +385,10 @@
         });
     }
 </script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
