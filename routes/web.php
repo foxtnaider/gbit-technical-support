@@ -7,6 +7,7 @@ use App\Http\Controllers\NapController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\OltCommandController;
+use App\Http\Controllers\OltApiController;
 
 // Redireccionar la ruta principal al login
 Route::redirect('/', '/login');
@@ -46,6 +47,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rutas para Comandos OLT
     Route::get('olt-commands', [OltCommandController::class, 'index'])->name('olt-commands.index');
     Route::post('olt-commands/execute', [OltCommandController::class, 'executeCommand'])->name('olt-commands.execute');
+    
+    // Rutas para API OLT
+    Route::get('olt-api', [OltApiController::class, 'index'])->name('olt-api.index');
+    Route::post('api/olt/perform-connect', [OltApiController::class, 'performConnect'])->name('olt-api.perform-connect');
+    Route::post('api/olt/perform-send-command', [OltApiController::class, 'performSendCommand'])->name('olt-api.perform-send-command');
+    Route::post('api/olt/perform-disconnect', [OltApiController::class, 'performDisconnect'])->name('olt-api.perform-disconnect');
 });
 
 require __DIR__.'/auth.php';

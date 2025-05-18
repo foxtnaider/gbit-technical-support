@@ -53,6 +53,10 @@ new class extends Component
                     <x-nav-link :href="route('olt-commands.index')" :active="request()->routeIs('olt-commands.*')" wire:navigate class="text-gbit-blue-800 hover:text-gbit-orange-500">
                         {{ __('Comandos OLT') }}
                     </x-nav-link>
+                    
+                    <x-nav-link :href="route('olt-api.index')" :active="request()->routeIs('olt-api.*')" wire:navigate class="text-gbit-blue-800 hover:text-gbit-orange-500">
+                        {{ __('API OLT') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -123,6 +127,10 @@ new class extends Component
             
             <x-responsive-nav-link :href="route('olt-commands.index')" :active="request()->routeIs('olt-commands.*')" wire:navigate class="text-gbit-blue-800 hover:text-gbit-orange-500">
                 {{ __('Comandos OLT') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('olt-api.index')" :active="request()->routeIs('olt-api.*')" wire:navigate class="text-gbit-blue-800 hover:text-gbit-orange-500">
+                {{ __('API OLT') }}
             </x-responsive-nav-link>
         </div>
 

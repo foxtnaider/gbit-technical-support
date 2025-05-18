@@ -4,11 +4,11 @@
 
 @layer components {
     .btn-primary {
-        @apply bg-gbit-blue text-white font-semibold py-2 px-4 rounded-md hover:bg-gbit-blue-dark transition-colors duration-300;
+        @apply bg-gbit-blue text-white font-semibold py-2 px-4 rounded-md hover:bg-gbit-blue-900 transition-colors duration-300;
     }
     
     .btn-secondary {
-        @apply bg-gbit-orange text-white font-semibold py-2 px-4 rounded-md hover:bg-gbit-orange-dark transition-colors duration-300;
+        @apply bg-gbit-orange text-white font-semibold py-2 px-4 rounded-md hover:bg-gbit-orange-700 transition-colors duration-300;
     }
     
     .input-field {
