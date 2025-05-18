@@ -6,6 +6,7 @@ use App\Http\Controllers\NetworkDeviceController;
 use App\Http\Controllers\NapController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\OltCommandController;
 
 // Redireccionar la ruta principal al login
 Route::redirect('/', '/login');
@@ -41,6 +42,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('monitoring/check-device/{id}', [MonitoringController::class, 'checkDevice'])->name('monitoring.check-device');
     Route::post('monitoring/clear-queue', [MonitoringController::class, 'clearQueue'])->name('monitoring.clear-queue');
     Route::post('monitoring/restart-worker', [MonitoringController::class, 'restartWorker'])->name('monitoring.restart-worker');
+    
+    // Rutas para Comandos OLT
+    Route::get('olt-commands', [OltCommandController::class, 'index'])->name('olt-commands.index');
+    Route::post('olt-commands/execute', [OltCommandController::class, 'executeCommand'])->name('olt-commands.execute');
 });
 
 require __DIR__.'/auth.php';
