@@ -283,29 +283,29 @@
     function initMap() {
         if (document.getElementById('map')) {
             // Añadir los estilos de Leaflet al head
-            if (!document.getElementById('leaflet-css')) {
-                const leafletCSS = document.createElement('link');
-                leafletCSS.id = 'leaflet-css';
-                leafletCSS.rel = 'stylesheet';
-                leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-                leafletCSS.crossOrigin = '';
-                document.head.appendChild(leafletCSS);
-            }
+            // if (!document.getElementById('leaflet-css')) {
+            //     const leafletCSS = document.createElement('link');
+            //     leafletCSS.id = 'leaflet-css';
+            //     leafletCSS.rel = 'stylesheet';
+            //     leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            //     leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+            //     leafletCSS.crossOrigin = '';
+            //     document.head.appendChild(leafletCSS);
+            // }
 
-            // Cargar Leaflet JS si no está cargado
-            if (typeof L === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-                script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
-                script.crossOrigin = '';
-                script.onload = function() {
-                    initLeafletMap();
-                };
-                document.head.appendChild(script);
-            } else {
+            // // Cargar Leaflet JS si no está cargado
+            // if (typeof L === 'undefined') {
+            //     const script = document.createElement('script');
+            //     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            //     script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+            //     script.crossOrigin = '';
+            //     script.onload = function() {
+            //         initLeafletMap();
+            //     };
+            //     document.head.appendChild(script);
+            // } else {
                 initLeafletMap();
-            }
+            // }
         }
     }
 
