@@ -255,7 +255,9 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    responseArea.value += data.response + '\n';
+                    // Mostrar la respuesta formateada si existe, de lo contrario mostrar la respuesta cruda
+                    const responseText = data.response?.formatted || JSON.stringify(data.response, null, 2);
+                    responseArea.value += responseText + '\n';
                     if (!isRetry) {
                         commandInput.value = '';
                     }
