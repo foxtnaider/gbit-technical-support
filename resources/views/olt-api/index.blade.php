@@ -10,10 +10,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label for="device-select" class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Dispositivo OLT</label>
-                        <select id="device-select" class="input-field w-full">
+                        <select id="device-select" class="input-field w-full" data-devices='@json($devices)'>
                             <option value="">Seleccione un dispositivo...</option>
                             @foreach($devices as $device)
-                                <option value="{{ $device->id }}">{{ $device->name ?? $device->olt_name ?? 'OLT ' . $device->id }}</option>
+                                <option value="{{ $device->id }}" data-password="{{ $device->password ?? '' }}">
+                                    {{ $device->display_name }}
+                                </option>
                             @endforeach
                         </select>
                         <p class="mt-2 text-xs text-gray-500">Dispositivos encontrados: {{ count($devices) }}</p>
@@ -41,10 +43,21 @@
 
                 <div class="mb-6">
                     <label for="command-input" class="block text-sm font-medium text-gray-700 mb-2">Comando</label>
-                    <div class="flex">
+                    <div class="flex mb-2">
                         <input type="text" id="command-input" class="input-field flex-grow" placeholder="Ingrese un comando..." disabled>
                         <button id="send-command-btn" class="btn-primary ml-2 opacity-50 cursor-not-allowed" disabled>
                             Enviar
+                        </button>
+                    </div>
+                    <div id="privilege-buttons" class="hidden space-x-2">
+                        <button id="elevate-privileges-btn" class="bg-gbit-orange-500 hover:bg-gbit-orange-600 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
+                            Elevar Privilegios
+                        </button>
+                        <button id="config-mode-btn" class="bg-gbit-blue-500 hover:bg-gbit-blue-600 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
+                            Modo Configuración
+                        </button>
+                        <button id="show-mac-table-btn" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
+                            Tabla MAC
                         </button>
                     </div>
                 </div>
@@ -115,46 +128,76 @@
             commandInput.disabled = !isConnected;
             sendCommandBtn.disabled = !isConnected;
             
+            // Mostrar/ocultar botones de privilegios
+            const privilegeButtons = document.getElementById('privilege-buttons');
             if (isConnected) {
                 showStatus('Conectado a la OLT');
+                privilegeButtons.classList.remove('hidden');
             } else {
                 showStatus('Desconectado de la OLT');
                 sessionIdInput.value = '';
+                privilegeButtons.classList.add('hidden');
             }
         }
 
         // Función para conectar a la OLT
         async function connectToOLT() {
+            console.log('Iniciando conexión a OLT...');
             clearMessages();
             
             const device_id = deviceSelect.value;
             const enablePassword = enablePasswordInput.value;
             
+            console.log('Datos del formulario:', { device_id, has_enable_password: !!enablePassword });
+            
             if (!device_id) {
-                showStatus('Por favor, seleccione un dispositivo OLT', true);
+                const errorMsg = 'Por favor, seleccione un dispositivo OLT';
+                console.error(errorMsg);
+                showStatus(errorMsg, true);
                 return;
             }
             
             if (!enablePassword) {
-                showStatus('Por favor, ingrese la contraseña de elevación de privilegios', true);
+                const errorMsg = 'Por favor, ingrese la contraseña de elevación de privilegios';
+                console.error(errorMsg);
+                showStatus(errorMsg, true);
                 return;
             }
             
             showStatus('Conectando a la OLT...');
             
             try {
-                const response = await fetch('/api/olt/perform-connect', {
+                const url = '/api/olt/perform-connect';
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const requestBody = JSON.stringify({ 
+                    device_id, 
+                    enablePassword 
+                });
+                
+                console.log('Enviando solicitud a:', url);
+                console.log('Cuerpo de la solicitud:', { device_id, has_enable_password: !!enablePassword });
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ device_id, enablePassword })
+                    body: requestBody
                 });
                 
-                const data = await response.json();
+                console.log('Respuesta recibida, estado:', response.status);
+                
+                const data = await response.json().catch(error => {
+                    console.error('Error al analizar la respuesta JSON:', error);
+                    throw new Error('La respuesta del servidor no es un JSON válido');
+                });
+                
+                console.log('Datos de la respuesta:', data);
                 
                 if (data.success) {
+                    console.log('Conexión exitosa, sessionId:', data.sessionId);
                     // Almacenar sessionId
                     sessionIdInput.value = data.sessionId;
                     
@@ -168,10 +211,14 @@
                     updateUIConnectionState(true);
                     responseArea.value = 'Conexión establecida correctamente.\n';
                 } else {
-                    showStatus('Error al conectar: ' + data.message, true);
+                    const errorMsg = 'Error al conectar: ' + (data.message || 'Error desconocido');
+                    console.error(errorMsg, data);
+                    showStatus(errorMsg, true);
                 }
             } catch (error) {
-                showStatus('Error de conexión: ' + error.message, true);
+                const errorMsg = 'Error de conexión: ' + (error.message || 'Error desconocido');
+                console.error(errorMsg, error);
+                showStatus(errorMsg, true);
             }
         }
 
@@ -347,6 +394,63 @@
                 sendCommand();
             }
         });
+    });
+
+    // Función para manejar el botón de elevar privilegios
+    document.getElementById('elevate-privileges-btn').addEventListener('click', function() {
+        const commandInput = document.getElementById('command-input');
+        commandInput.value = 'enable';
+        commandInput.focus();
+        
+        // Mostrar mensaje de estado
+        const statusArea = document.getElementById('status-area');
+        statusArea.textContent = 'Comando "enable" listo para enviar. Haga clic en Enviar para ejecutarlo.';
+        statusArea.classList.remove('hidden');
+    });
+    
+    // Función para manejar el botón de modo configuración
+    document.getElementById('config-mode-btn').addEventListener('click', function() {
+        const commandInput = document.getElementById('command-input');
+        commandInput.value = 'configure terminal';
+        commandInput.focus();
+        
+        // Mostrar mensaje de estado
+        const statusArea = document.getElementById('status-area');
+        statusArea.textContent = 'Comando "configure terminal" listo para enviar. Haga clic en Enviar para ejecutarlo.';
+        statusArea.classList.remove('hidden');
+    });
+
+    // Función para manejar el botón de tabla MAC
+    document.getElementById('show-mac-table-btn').addEventListener('click', function() {
+        const commandInput = document.getElementById('command-input');
+        commandInput.value = 'show mac address-table';
+        commandInput.focus();
+        
+        // Mostrar mensaje de estado
+        const statusArea = document.getElementById('status-area');
+        statusArea.textContent = 'Comando listo. Haga clic en Enviar para ver la tabla de direcciones MAC.';
+        statusArea.classList.remove('hidden');
+    });
+
+    // Manejar el cambio de selección de dispositivo
+    document.getElementById('device-select').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const password = selectedOption.getAttribute('data-password');
+        const passwordInput = document.getElementById('enable-password');
+        
+        if (password) {
+            passwordInput.value = password;
+            
+            // Mostrar mensaje de estado
+            const statusArea = document.getElementById('status-area');
+            statusArea.textContent = 'Contraseña cargada automáticamente para el dispositivo seleccionado.';
+            statusArea.classList.remove('hidden');
+            
+            // Ocultar el mensaje después de 3 segundos
+            setTimeout(() => {
+                statusArea.classList.add('hidden');
+            }, 3000);
+        }
     });
 </script>
 @endsection
