@@ -1,5 +1,90 @@
 @extends('layouts.olt-api')
 
+@section('styles')
+<style>
+    /* Estilos para la tabla MAC */
+    .mac-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.875rem;
+    }
+    
+    .mac-table th, 
+    .mac-table td {
+        padding: 0.5rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .mac-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+    }
+    
+    .mac-table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+    
+    .mac-address {
+        font-family: monospace;
+        color: #3b82f6;
+    }
+    
+    .port {
+        font-family: monospace;
+    }
+    
+    /* Estilos para las respuestas de comandos */
+    .command-response {
+        margin: 1rem 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .command-prompt {
+        padding: 0.5rem 1rem;
+        background-color: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        font-family: monospace;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+    
+    .command-output {
+        padding: 1rem;
+        background-color: white;
+    }
+    
+    /* Estilos para el área de respuesta */
+    #response-area {
+        font-family: monospace;
+        white-space: pre-wrap;
+        background-color: #1e293b;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        min-height: 200px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    /* Estilos para el contenedor de la tabla MAC */
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+        margin: 1rem 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -273,6 +358,7 @@
             
             const sessionId = sessionIdInput.value;
             const cmd = command || commandInput.value;
+            const isMacTableCommand = cmd.toLowerCase().includes('show mac address-table');
             
             if (!sessionId) {
                 showStatus('No hay una sesión activa', true);
@@ -286,6 +372,7 @@
             
             if (!isRetry) {
                 showStatus('Enviando comando...');
+                // Mostrar siempre el comando en el área de respuestas
                 responseArea.value += `\n> ${cmd}\n`;
             }
             
@@ -294,34 +381,65 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ sessionId, command: cmd })
+                    body: JSON.stringify({ 
+                        sessionId, 
+                        command: cmd,
+                        configMode: cmd.toLowerCase().startsWith('configure terminal')
+                    })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Mostrar la respuesta formateada si existe, de lo contrario mostrar la respuesta cruda
-                    const responseText = data.response?.formatted || JSON.stringify(data.response, null, 2);
-                    responseArea.value += responseText + '\n';
+                    showStatus('Comando ejecutado correctamente');
+                    
+                    // Mostrar la salida del comando
+                    if (isMacTableCommand && data.formatted) {
+                        // Si es la tabla MAC y tenemos una versión formateada, mostrarla
+                        const responseContainer = document.createElement('div');
+                        responseContainer.className = 'command-response';
+                        responseContainer.innerHTML = `
+                            <div class='command-output mt-2'>
+                                ${data.formatted}
+                            </div>
+                        `;
+                        
+                        // Insertar antes del textarea
+                        responseArea.parentNode.insertBefore(responseContainer, responseArea);
+                        
+                        // También mostrar la salida formateada en el área de texto
+                        responseArea.value += '\n' + data.formatted.replace(/<[^>]*>?/gm, '') + '\n';
+                    } 
+                    
+                    // Mostrar siempre la salida en texto plano si está disponible
+                    if (data.output) {
+                        responseArea.value += data.output + '\n';
+                    }
+                    
+                    // Desplazarse al final del área de respuesta
+                    responseArea.scrollTop = responseArea.scrollHeight;
+                    
+                    // Limpiar el campo de comando
                     if (!isRetry) {
                         commandInput.value = '';
                     }
-                    clearMessages();
                 } else {
-                    // Verificar si es el error específico de sesión inactiva
-                    if (data.message === 'Error al enviar comando: No hay una sesión activa') {
-                        showStatus('Sesión perdida. Intentando reconectar...', true);
-                        
-                        // Intentar reconexión automática
+                    // Si hay un error de sesión, intentar reconectar y reenviar el comando
+                    if (data.message && data.message.includes('No hay una sesión activa')) {
                         await reconnectAndRetryCommand(cmd);
                     } else {
-                        showStatus('Error al enviar comando: ' + data.message, true);
+                        const errorMsg = 'Error: ' + (data.message || 'Error desconocido');
+                        showStatus(errorMsg, true);
+                        responseArea.value += errorMsg + '\n';
                     }
                 }
             } catch (error) {
-                showStatus('Error al enviar comando: ' + error.message, true);
+                const errorMsg = 'Error de conexión: ' + (error.message || 'Error desconocido');
+                showStatus(errorMsg, true);
+                responseArea.value += errorMsg + '\n';
             }
         }
 
