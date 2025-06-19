@@ -17,9 +17,17 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
         <!-- Estilos y Scripts compilados -->
-        {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
-        <link rel="stylesheet" href="{{ asset('build/assets/app-DT6ZoyAr.css') }}">
-        <script src="{{ asset('build/assets/app-eMHK6VFw.js') }}" defer></script>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Fallback para entornos sin Vite -->
+        @production
+            @php
+                $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+            @endphp
+            @if(!app()->isLocal() && empty(config('vite.dev_server_is_running')))
+                <link rel="stylesheet" href="{{ asset('build/' . $manifest['resources/css/app.css']['file']) }}">
+                <script src="{{ asset('build/' . $manifest['resources/js/app.js']['file']) }}" defer></script>
+            @endif
+        @endproduction
     </head>
     <body class="font-sans antialiased bg-gray-50">
         <div class="min-h-screen bg-gray-50">
