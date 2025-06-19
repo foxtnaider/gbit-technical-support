@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -12,9 +13,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Ejecutar el comando para verificar el estado de los dispositivos cada 5 minutos
-        // withoutOverlapping() evita que se ejecute si la tarea anterior aún está en ejecución
-        $schedule->command('devices:check-status')->everyFiveMinutes()->withoutOverlapping();
+        // En las versiones modernas de Laravel, la programación de tareas se define en routes/console.php.
     }
 
     /**

@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
 ENV TZ=America/Caracas
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Configurar la zona horaria directamente en la configuración de PHP
+RUN echo "date.timezone = ${TZ}" > /usr/local/etc/php/conf.d/99-timezone.ini
+
 # Limpiar cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 

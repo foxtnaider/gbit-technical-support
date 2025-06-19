@@ -3,7 +3,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <h4 class="font-medium text-blue-700">OLTs Activas</h4>
-            <p class="text-2xl font-bold">24</p>
+            <p class="text-2xl font-bold">{{ $oltsActivas }}</p>
         </div>
         <div class="bg-green-50 p-4 rounded-lg border border-green-200">
             <h4 class="font-medium text-green-700">ONUs Conectadas</h4>

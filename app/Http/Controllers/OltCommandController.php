@@ -22,6 +22,15 @@ class OltCommandController extends Controller
                             })
                             ->orderBy('id')
                             ->get();
+
+        // Obtener la cantidad de OLTs activas (status 'active' y no eliminadas)
+        $oltsActivas = NetworkDevice::where(function($query) {
+            $query->where('type', 'olt')
+                  ->orWhere('type', 'OLT');
+        })
+        ->where('status', 'active')
+        ->whereNull('deleted_at')
+        ->count();
         
         // Registrar la cantidad de OLTs encontradas para depuración
         Log::info('OLTs encontradas para la vista de comandos: ' . $olts->count());
@@ -50,7 +59,7 @@ class OltCommandController extends Controller
             "show interface"
         ];
         
-        return view('olt-commands.index', compact('olts', 'commonCommands'));
+        return view('olt-commands.index', compact('olts', 'commonCommands', 'oltsActivas'));
     }
     
     /**
