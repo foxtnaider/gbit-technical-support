@@ -30,7 +30,7 @@ RUN echo "date.timezone = ${TZ}" > /usr/local/etc/php/conf.d/99-timezone.ini
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones PHP
-RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd dom
 
 # Obtener Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

@@ -16,6 +16,7 @@ services:
       - ./:/var/www
     networks:
       - gbit-network
+      - web_network
     depends_on:
       - db
 
@@ -30,6 +31,7 @@ services:
       - ./docker/nginx:/etc/nginx/conf.d/
     networks:
       - gbit-network
+      - web_network
     depends_on:
       - app
 
@@ -53,6 +55,7 @@ services:
       - ./:/var/www
     networks:
       - gbit-network
+      - web_network
 
   worker:
     build:
@@ -72,6 +75,7 @@ services:
       - ./:/var/www
     networks:
       - gbit-network
+      - web_network
     depends_on:
       - app
       - db
@@ -91,10 +95,13 @@ services:
       - "5432:5432"
     networks:
       - gbit-network
+      - web_network
 
 networks:
   gbit-network:
     driver: bridge
+  web_network:
+    external: true
 
 volumes:
   pgdata:

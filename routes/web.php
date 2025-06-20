@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 // Rutas para gestión de dispositivos de red (OLT y NAP)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('network-devices', NetworkDeviceController::class);
+    Route::post('network-devices/{device}/register', [NetworkDeviceController::class, 'register'])->name('network-devices.register');
     
     // Rutas para NAPs
     Route::resource('naps', NapController::class);

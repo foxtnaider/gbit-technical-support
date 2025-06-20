@@ -38,6 +38,7 @@ class NetworkDevice extends Model
         'power_threshold_low',
         'power_threshold_high',
         'status',
+        'registration_status',
         'last_checked_at',
         'last_ping_status',
         'olt_name',

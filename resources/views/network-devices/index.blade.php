@@ -33,6 +33,7 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tecnología</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado de Registro</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
@@ -60,6 +61,11 @@
                                                 {{ $device->status === 'active' ? 'Activo' : ($device->status === 'maintenance' ? 'Mantenimiento' : 'Inactivo') }}
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $device->registration_status === 'registered' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                                {{ $device->registration_status === 'registered' ? 'Registrado' : 'No Registrado' }}
+                                            </span>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex space-x-2">
                                                 <a href="{{ route('network-devices.show', $device) }}" class="text-blue-600 hover:text-blue-900">
@@ -68,6 +74,16 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
                                                 </a>
+                                                @if($device->registration_status !== 'registered')
+                                                    <form action="{{ route('network-devices.register', $device) }}" method="POST" class="inline-block">
+                                                        @csrf
+                                                        <button type="submit" class="text-green-600 hover:text-green-900" title="Registrar OLT">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @endif
                                                 <a href="{{ route('network-devices.edit', $device) }}" class="text-yellow-600 hover:text-yellow-900">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
