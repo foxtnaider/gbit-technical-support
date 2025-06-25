@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rutas para Comandos OLT
     Route::get('olt-commands', [OltCommandController::class, 'index'])->name('olt-commands.index');
     Route::post('olt-commands/execute', [OltCommandController::class, 'executeCommand'])->name('olt-commands.execute');
+    Route::get('api/olt/onu-statistics', [OltCommandController::class, 'getOnuStatistics'])->name('olt-commands.onu-statistics');
     
     // Rutas para API OLT
     Route::get('olt-api', [OltApiController::class, 'index'])->name('olt-api.index');

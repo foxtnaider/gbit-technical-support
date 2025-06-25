@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\NetworkDevice;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class OltCommandController extends Controller
 {
@@ -308,6 +309,73 @@ class OltCommandController extends Controller
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ]);
+        }
+    }
+    
+    /**
+     * Obtiene las estadísticas de ONUs desde la API externa
+     */
+    public function getOnuStatistics()
+    {
+        try {
+            // Intentar obtener datos del caché primero (con TTL de 5 minutos)
+            if (Cache::has('onu_statistics')) {
+                return response()->json(Cache::get('onu_statistics'));
+            }
+            
+            // Obtener la URL base de la API desde las variables de entorno
+            $apiBaseUrl = env('API_TRUNK_OLT');
+            
+            if (empty($apiBaseUrl)) {
+                Log::error('La variable de entorno API_TRUNK_OLT no está configurada');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de configuración: API_TRUNK_OLT no está definida'
+                ], 500);
+            }
+            
+            $apiUrl = rtrim($apiBaseUrl, '/') . '/api/query/statistics/onus';
+            
+            Log::info('Consultando estadísticas de ONUs', ['url' => $apiUrl]);
+            
+            // Realizar la petición a la API externa
+            $response = Http::timeout(15)->get($apiUrl);
+            
+            if (!$response->successful()) {
+                Log::error('Error al obtener estadísticas de ONUs', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al obtener estadísticas: ' . $response->status()
+                ], $response->status());
+            }
+            
+            // Procesar la respuesta
+            $data = $response->json();
+            
+            // Guardar en caché por 5 minutos
+            Cache::put('onu_statistics', $data, now()->addMinutes(5));
+            
+            Log::info('Estadísticas de ONUs obtenidas correctamente', [
+                'olts_count' => count($data['statistics']['olts'] ?? []),
+                'total_onus' => $data['statistics']['totals']['total'] ?? 0
+            ]);
+            
+            return response()->json($data);
+            
+        } catch (\Exception $e) {
+            Log::error('Excepción al obtener estadísticas de ONUs', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
