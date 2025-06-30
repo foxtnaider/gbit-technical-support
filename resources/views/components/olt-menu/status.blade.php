@@ -93,7 +93,7 @@
                 loadingIndicator.classList.remove('hidden');
                 
                 // Realizar la petición HTTP
-                fetch(`${apiBaseUrl}/api/query/results/${oltName}`)
+                fetch(`${apiBaseUrl}/api/query/results/olt/${oltName}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Error en la respuesta del servidor');
@@ -103,9 +103,11 @@
                     .then(data => {
                         if (data.success) {
                             // Actualizar la tabla con los datos recibidos
-                            updateOnusTable(data.results, statusFilter);
-                            // Actualizar estadísticas PON
-                            updatePonStats(data.results.data.ponStats);
+                            updateOnusTable(data, statusFilter);
+                            // Actualizar estadísticas PON - Nota: la nueva API no proporciona estadísticas PON directamente
+                            // Generamos las estadísticas PON a partir de los datos de ONUs
+                            const ponStats = generatePonStatsFromOnus(data);
+                            updatePonStats(ponStats);
                         } else {
                             throw new Error(data.message || 'Error desconocido');
                         }
@@ -127,9 +129,21 @@
                     });
             });
             
-            function updateOnusTable(results, statusFilter) {
-                const onus = results.data.onus;
-                const oltName = results.name;
+            function updateOnusTable(data, statusFilter) {
+                // Verificar si hay datos y si tienen la estructura esperada
+                if (!data.data || data.data.length === 0 || !data.data[0].rawData || !data.data[0].rawData.onus) {
+                    onusTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                No se encontraron ONUs para esta OLT
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                const onus = data.data[0].rawData.onus;
+                const oltName = data.message.split('OLT ')[1] || 'OLT';
                 
                 if (!onus || onus.length === 0) {
                     onusTableBody.innerHTML = `
@@ -186,8 +200,52 @@
                 onusTableBody.innerHTML = rows;
             }
             
+            // Función para generar estadísticas PON a partir de los datos de ONUs
+            function generatePonStatsFromOnus(data) {
+                if (!data.data || data.data.length === 0 || !data.data[0].rawData || !data.data[0].rawData.onus) {
+                    return null;
+                }
+                
+                const onus = data.data[0].rawData.onus;
+                const ponStats = {};
+                
+                // Agrupar ONUs por PON
+                onus.forEach(onu => {
+                    // El formato del índice es típicamente '1/1/X:Y' donde X es el número PON
+                    const ponMatch = onu.index.match(/\d+\/\d+\/(\d+):/); 
+                    if (ponMatch) {
+                        const ponNumber = ponMatch[1];
+                        
+                        if (!ponStats[ponNumber]) {
+                            ponStats[ponNumber] = {
+                                total: 0,
+                                working: 0,
+                                offline: 0,
+                                dyinggasp: 0
+                            };
+                        }
+                        
+                        ponStats[ponNumber].total++;
+                        
+                        switch (onu.phaseState.toLowerCase()) {
+                            case 'working':
+                                ponStats[ponNumber].working++;
+                                break;
+                            case 'offline':
+                                ponStats[ponNumber].offline++;
+                                break;
+                            case 'dyinggasp':
+                                ponStats[ponNumber].dyinggasp++;
+                                break;
+                        }
+                    }
+                });
+                
+                return ponStats;
+            }
+            
             function updatePonStats(ponStats) {
-                if (!ponStats) {
+                if (!ponStats || Object.keys(ponStats).length === 0) {
                     ponStatsContainer.innerHTML = '<p class="text-sm text-gray-500">No hay estadísticas PON disponibles</p>';
                     return;
                 }

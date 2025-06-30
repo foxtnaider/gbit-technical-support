@@ -334,7 +334,7 @@ class OltCommandController extends Controller
                 ], 500);
             }
             
-            $apiUrl = rtrim($apiBaseUrl, '/') . '/api/query/statistics/onus';
+            $apiUrl = rtrim($apiBaseUrl, '/') . '/api/statistics/summary';
             
             Log::info('Consultando estadísticas de ONUs', ['url' => $apiUrl]);
             
@@ -353,18 +353,48 @@ class OltCommandController extends Controller
                 ], $response->status());
             }
             
-            // Procesar la respuesta
-            $data = $response->json();
+            // Procesar la respuesta con la nueva estructura
+            $apiData = $response->json();
+            
+            // Transformar la estructura de datos para mantener compatibilidad con el frontend
+            $transformedData = [
+                'success' => $apiData['success'] ?? false,
+                'statistics' => [
+                    'totals' => [
+                        'total' => $apiData['data']['totalOnus'] ?? 0,
+                        'working' => $apiData['data']['connectedOnus'] ?? 0,
+                        'offline' => $apiData['data']['disconnectedOnus'] ?? 0,
+                        'dyinggasp' => $apiData['data']['dyingGaspOnus'] ?? 0
+                    ],
+                    'olts' => []
+                ]
+            ];
+            
+            // Transformar los datos de cada OLT
+            if (!empty($apiData['data']['oltsData'])) {
+                foreach ($apiData['data']['oltsData'] as $olt) {
+                    $transformedData['statistics']['olts'][] = [
+                        'id' => $olt['oltId'] ?? null,
+                        'name' => $olt['oltName'] ?? 'OLT Sin Nombre',
+                        'total' => $olt['totalOnus'] ?? 0,
+                        'working' => $olt['connectedOnus'] ?? 0,
+                        'offline' => $olt['disconnectedOnus'] ?? 0,
+                        'dyinggasp' => $olt['dyingGaspOnus'] ?? 0,
+                        'status' => $olt['status'] ?? 'unknown',
+                        'error' => $olt['error'] ?? null
+                    ];
+                }
+            }
             
             // Guardar en caché por 5 minutos
-            Cache::put('onu_statistics', $data, now()->addMinutes(5));
+            Cache::put('onu_statistics', $transformedData, now()->addMinutes(5));
             
             Log::info('Estadísticas de ONUs obtenidas correctamente', [
-                'olts_count' => count($data['statistics']['olts'] ?? []),
-                'total_onus' => $data['statistics']['totals']['total'] ?? 0
+                'olts_count' => count($transformedData['statistics']['olts'] ?? []),
+                'total_onus' => $transformedData['statistics']['totals']['total'] ?? 0
             ]);
             
-            return response()->json($data);
+            return response()->json($transformedData);
             
         } catch (\Exception $e) {
             Log::error('Excepción al obtener estadísticas de ONUs', [
