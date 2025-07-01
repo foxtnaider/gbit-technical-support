@@ -72,33 +72,5 @@
         </div>
     </div>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Seleccionar todos los botones del menú
-            const menuItems = document.querySelectorAll('.menu-item');
-            
-            // Agregar evento de clic a cada botón del menú
-            menuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // Remover clase activa de todos los botones
-                    menuItems.forEach(btn => {
-                        btn.classList.remove('bg-blue-50');
-                    });
-                    
-                    // Agregar clase activa al botón seleccionado
-                    this.classList.add('bg-blue-50');
-                    
-                    // Ocultar todas las secciones de contenido
-                    const contentSections = document.querySelectorAll('.content-section');
-                    contentSections.forEach(section => {
-                        section.classList.add('hidden');
-                    });
-                    
-                    // Mostrar la sección de contenido correspondiente
-                    const targetId = this.getAttribute('data-target');
-                    document.getElementById(targetId).classList.remove('hidden');
-                });
-            });
-        });
-    </script>
+
 </x-app-layout>

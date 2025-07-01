@@ -1,203 +1,229 @@
-@extends('layouts.olt-api')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('API OLT') }}
+        </h2>
+    </x-slot>
 
-@section('styles')
-<style>
-    /* Estilos para la tabla MAC */
-    .mac-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1rem 0;
-        font-size: 0.875rem;
-    }
-    
-    .mac-table th, 
-    .mac-table td {
-        padding: 0.5rem 1rem;
-        text-align: left;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .mac-table th {
-        background-color: #f9fafb;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        color: #6b7280;
-    }
-    
-    .mac-table tbody tr:hover {
-        background-color: #f9fafb;
-    }
-    
-    .mac-address {
-        font-family: monospace;
-        color: #3b82f6;
-    }
-    
-    .port {
-        font-family: monospace;
-    }
-    
-    /* Estilos para las respuestas de comandos */
-    .command-response {
-        margin: 1rem 0;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        overflow: hidden;
-    }
-    
-    .command-prompt {
-        padding: 0.5rem 1rem;
-        background-color: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
-        font-family: monospace;
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
-    
-    .command-output {
-        padding: 1rem;
-        background-color: white;
-    }
-    
-    /* Estilos para el área de respuesta */
-    #response-area {
-        font-family: monospace;
-        white-space: pre-wrap;
-        background-color: #1e293b;
-        color: #e2e8f0;
-        padding: 1rem;
-        border-radius: 0.375rem;
-        min-height: 200px;
-        max-height: 500px;
-        overflow-y: auto;
-    }
-    
-    /* Estilos para el contenedor de la tabla MAC */
-    .table-container {
-        max-height: 500px;
-        overflow-y: auto;
-        margin: 1rem 0;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-    }
-</style>
-@endsection
-
-@section('content')
-<div class="container py-6">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
-                <h2 class="text-2xl font-semibold text-gbit-blue-800 mb-6">API OLT</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="device-select" class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Dispositivo OLT</label>
-                        <select id="device-select" class="input-field w-full" data-devices='@json($devices)'>
-                            <option value="">Seleccione un dispositivo...</option>
-                            @foreach($devices as $device)
-                                <option value="{{ $device->id }}" data-password="{{ $device->password ?? '' }}">
-                                    {{ $device->display_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="mt-2 text-xs text-gray-500">Dispositivos encontrados: {{ count($devices) }}</p>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="device-select" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Dispositivo OLT</label>
+                            <select id="device-select" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" data-devices='@json($devices)'>
+                                <option value="">Seleccione un dispositivo...</option>
+                                @foreach($devices as $device)
+                                    <option value="{{ $device->id }}" data-password="{{ $device->password ?? '' }}">
+                                        {{ $device->display_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-2 text-xs text-gray-500">Dispositivos encontrados: {{ count($devices) }}</p>
+                        </div>
+                        <div>
+                            <label for="enable-password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña de elevación de privilegios</label>
+                            <input type="password" id="enable-password" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ingrese la contraseña de elevación">
+                        </div>
                     </div>
-                    <div>
-                        <label for="enable-password" class="block text-sm font-medium text-gray-700 mb-2">Contraseña de elevación de privilegios</label>
-                        <input type="password" id="enable-password" class="input-field w-full" placeholder="Ingrese la contraseña de elevación">
-                    </div>
-                </div>
 
-                <div class="flex space-x-4 mb-6">
-                    <button id="connect-btn" class="btn-primary flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                        </svg>
-                        Conectar
-                    </button>
-                    <button id="disconnect-btn" class="btn-secondary flex items-center opacity-50 cursor-not-allowed" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M13 10V8a4 4 0 00-8 0v2H3a1 1 0 00-1 1v6a1 1 0 001 1h14a1 1 0 001-1v-6a1 1 0 00-1-1h-2zm-5-2a2 2 0 114 0v2H8V8zm-3 4h10v4H5v-4z" clip-rule="evenodd" />
-                        </svg>
-                        Desconectar
-                    </button>
-                </div>
-
-                <div class="mb-6">
-                    <label for="command-input" class="block text-sm font-medium text-gray-700 mb-2">Comando</label>
-                    <div class="flex mb-2">
-                        <input type="text" id="command-input" class="input-field flex-grow" placeholder="Ingrese un comando..." disabled>
-                        <button id="send-command-btn" class="btn-primary ml-2 opacity-50 cursor-not-allowed" disabled>
-                            Enviar
+                    <div class="flex space-x-4 mb-6">
+                        <button id="connect-btn" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                            </svg>
+                            Conectar
+                        </button>
+                        <button id="disconnect-btn" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-50 transition ease-in-out duration-150 cursor-not-allowed" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M13 10V8a4 4 0 00-8 0v2H3a1 1 0 00-1 1v6a1 1 0 001 1h14a1 1 0 001-1v-6a1 1 0 00-1-1h-2zm-5-2a2 2 0 114 0v2H8V8zm-3 4h10v4H5v-4z" clip-rule="evenodd" />
+                            </svg>
+                            Desconectar
                         </button>
                     </div>
-                    <div id="privilege-buttons" class="hidden space-x-2">
-                        <button id="elevate-privileges-btn" class="bg-gbit-orange-500 hover:bg-gbit-orange-600 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
-                            Elevar Privilegios
-                        </button>
-                        <button id="config-mode-btn" class="bg-gbit-blue-500 hover:bg-gbit-blue-600 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
-                            Modo Configuración
-                        </button>
-                        <button id="show-mac-table-btn" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
-                            Tabla MAC
-                        </button>
+
+                    <div class="mb-6">
+                        <label for="command-input" class="block text-sm font-medium text-gray-700 mb-1">Comando</label>
+                        <div class="flex mb-2">
+                            <input type="text" id="command-input" class="flex-grow mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ingrese un comando..." disabled>
+                            <button id="send-command-btn" class="ml-2 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-50 transition ease-in-out duration-150 cursor-not-allowed" disabled>
+                                Enviar
+                            </button>
+                        </div>
+                        <div id="privilege-buttons" class="hidden space-x-2">
+                            <button id="elevate-privileges-btn" class="bg-gbit-orange-500 hover:bg-gbit-orange-600 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
+                                Elevar Privilegios
+                            </button>
+                            <button id="config-mode-btn" class="bg-gbit-blue-500 hover:bg-gbit-blue-600 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
+                                Modo Configuración
+                            </button>
+                            <button id="show-mac-table-btn" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold py-1 px-2 rounded transition-colors duration-200">
+                                Tabla MAC
+                            </button>
+                        </div>
                     </div>
+
+                    <div class="mb-6">
+                        <label for="response-area" class="block text-sm font-medium text-gray-700 mb-1">Respuesta</label>
+                        <div id="response-area" class="w-full font-mono text-sm bg-gray-900 text-gray-200 rounded-md p-4 min-h-[200px] max-h-[500px] overflow-y-auto whitespace-pre-wrap"></div>
+                    </div>
+
+                    <div id="status-area" class="bg-blue-50 text-blue-800 p-4 rounded-md mb-4 hidden"></div>
+                    <div id="error-area" class="bg-red-50 text-red-800 p-4 rounded-md mb-4 hidden"></div>
+
+                    <!-- Campo oculto para almacenar el sessionId -->
+                    <input type="hidden" id="session-id" value="">
                 </div>
-
-                <div class="mb-6">
-                    <label for="response-area" class="block text-sm font-medium text-gray-700 mb-2">Respuesta</label>
-                    <textarea id="response-area" class="input-field w-full font-mono text-sm" rows="15" readonly></textarea>
-                </div>
-
-                <div id="status-area" class="bg-blue-50 text-blue-700 p-4 rounded-md mb-4 hidden"></div>
-                <div id="error-area" class="bg-red-50 text-red-700 p-4 rounded-md mb-4 hidden"></div>
-
-                <!-- Campo oculto para almacenar el sessionId -->
-                <input type="hidden" id="session-id" value="">
             </div>
         </div>
     </div>
-</div>
+    
+    <script>
+        document.addEventListener('turbo:load', function() {
+            // Referencias a elementos del DOM
+            const deviceSelect = document.getElementById('device-select');
+            const enablePasswordInput = document.getElementById('enable-password');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const commandInput = document.getElementById('command-input');
+            const sendCommandBtn = document.getElementById('send-command-btn');
+            const responseArea = document.getElementById('response-area');
+            const statusArea = document.getElementById('status-area');
+            const errorArea = document.getElementById('error-area');
+            const sessionIdInput = document.getElementById('session-id');
+            const privilegeButtons = document.getElementById('privilege-buttons');
+            const elevatePrivilegesBtn = document.getElementById('elevate-privileges-btn');
+            const configModeBtn = document.getElementById('config-mode-btn');
+            const showMacTableBtn = document.getElementById('show-mac-table-btn');
 
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Referencias a elementos del DOM
-        const deviceSelect = document.getElementById('device-select');
-        const enablePasswordInput = document.getElementById('enable-password');
-        const connectBtn = document.getElementById('connect-btn');
-        const disconnectBtn = document.getElementById('disconnect-btn');
-        const commandInput = document.getElementById('command-input');
-        const sendCommandBtn = document.getElementById('send-command-btn');
-        const responseArea = document.getElementById('response-area');
-        const statusArea = document.getElementById('status-area');
-        const errorArea = document.getElementById('error-area');
-        const sessionIdInput = document.getElementById('session-id');
-
-        // Variables para almacenar datos de conexión
-        let connectionData = {
-            device_id: null,
-            enablePassword: null
-        };
-
-        // Función para mostrar mensajes de estado
-        function showStatus(message, isError = false) {
-            if (isError) {
-                errorArea.textContent = message;
-                errorArea.classList.remove('d-none');
-                statusArea.classList.add('d-none');
-            } else {
-                statusArea.textContent = message;
-                statusArea.classList.remove('d-none');
-                errorArea.classList.add('d-none');
+            // Función para mostrar mensajes de estado/error
+            function showMessage(message, isError = false) {
+                const area = isError ? errorArea : statusArea;
+                const otherArea = isError ? statusArea : errorArea;
+                area.textContent = message;
+                area.classList.remove('hidden');
+                otherArea.classList.add('hidden');
             }
-        }
+            
+            // Función para actualizar el estado de la UI
+            function updateUI(isConnected) {
+                connectBtn.disabled = isConnected;
+                disconnectBtn.disabled = !isConnected;
+                commandInput.disabled = !isConnected;
+                sendCommandBtn.disabled = !isConnected;
 
+                if(isConnected) {
+                    connectBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    disconnectBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    sendCommandBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    privilegeButtons.classList.remove('hidden');
+                } else {
+                    connectBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    disconnectBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    sendCommandBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    privilegeButtons.classList.add('hidden');
+                }
+            }
+
+            // Lógica de conexión
+            connectBtn.addEventListener('click', async () => {
+                const device_id = deviceSelect.value;
+                const enablePassword = enablePasswordInput.value;
+
+                if (!device_id) {
+                    showMessage('Por favor, seleccione un dispositivo.', true);
+                    return;
+                }
+
+                showMessage('Conectando...', false);
+
+                try {
+                    const response = await fetch('/api/olt/connect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ device_id, enablePassword })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        sessionIdInput.value = data.sessionId;
+                        showMessage('Conectado y en modo privilegiado.');
+                        updateUI(true);
+                        responseArea.textContent = `Sesión iniciada: ${data.sessionId}\n${data.message}`;
+                    } else {
+                        throw new Error(data.message || 'Error en la conexión.');
+                    }
+                } catch (error) {
+                    showMessage(error.message, true);
+                    updateUI(false);
+                }
+            });
+
+            // Lógica de desconexión
+            disconnectBtn.addEventListener('click', () => {
+                sessionIdInput.value = '';
+                showMessage('Desconectado.');
+                updateUI(false);
+                responseArea.textContent = '';
+            });
+            
+            // Lógica para enviar comandos
+            async function sendCommand(command) {
+                const sessionId = sessionIdInput.value;
+                if (!sessionId) {
+                    showMessage('No hay una sesión activa.', true);
+                    return;
+                }
+
+                showMessage(`Enviando comando: ${command}...`);
+                responseArea.textContent += `\n> ${command}\n`;
+
+                try {
+                    const response = await fetch('/api/olt/privileged-commands', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ sessionId, commands: [command] })
+                    });
+                    
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage('Comando ejecutado exitosamente.');
+                        const output = data.output.join('\n');
+                        responseArea.textContent += output;
+                    } else {
+                        throw new Error(data.message || 'Error al ejecutar el comando.');
+                    }
+                } catch (error) {
+                    showMessage(error.message, true);
+                }
+            }
+
+            sendCommandBtn.addEventListener('click', () => sendCommand(commandInput.value));
+            elevatePrivilegesBtn.addEventListener('click', () => sendCommand('enable'));
+            configModeBtn.addEventListener('click', () => sendCommand('configure terminal'));
+            showMacTableBtn.addEventListener('click', () => sendCommand('show mac address-table'));
+
+            // Cargar contraseña al seleccionar dispositivo
+            deviceSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                enablePasswordInput.value = selectedOption.dataset.password || '';
+            });
+
+            // Inicializar estado de la UI
+            updateUI(false);
+        });
+    </script>
+</x-app-layout>
         // Función para limpiar mensajes
         function clearMessages() {
             statusArea.classList.add('d-none');
