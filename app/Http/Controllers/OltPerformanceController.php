@@ -41,33 +41,41 @@ class OltPerformanceController extends Controller
     private function processOltData(array $olts): array
     {
         return array_map(function ($olt) {
-            $stats = ['ok' => 0, 'warning' => 0, 'critical' => 0, 'total' => 0];
+            $overallStats = ['ok' => 0, 'warning' => 0, 'critical' => 0, 'total' => 0];
             $ponPortsData = [];
 
             if (!empty($olt['powerOnuStatistics'])) {
                 foreach ($olt['powerOnuStatistics'] as $onu) {
                     $pon = $onu['pon'];
+
+                    // Inicializar el puerto si no existe
                     if (!isset($ponPortsData[$pon])) {
-                        $ponPortsData[$pon] = ['onus' => [], 'totalOnus' => 0];
+                        $ponPortsData[$pon] = [
+                            'onus' => [],
+                            'stats' => ['ok' => 0, 'warning' => 0, 'critical' => 0, 'total' => 0]
+                        ];
                     }
 
-                    $onu['powerStatus'] = $this->getPowerStatus($onu['rxPower']);
-                    if ($onu['powerStatus'] !== 'unknown') {
-                       $stats[$onu['powerStatus']]++;
-                       $stats['total']++;
+                    // Procesar y clasificar la ONU
+                    $powerStatus = $this->getPowerStatus($onu['rxPower']);
+                    $onu['powerStatus'] = $powerStatus;
+
+                    if ($powerStatus !== 'unknown') {
+                        $ponPortsData[$pon]['stats'][$powerStatus]++;
+                        $ponPortsData[$pon]['stats']['total']++;
+                        $overallStats[$powerStatus]++;
+                        $overallStats['total']++;
                     }
                     
                     $ponPortsData[$pon]['onus'][] = $onu;
-                    $ponPortsData[$pon]['totalOnus']++;
                 }
             }
             
-            // Ordenar puertos PON por número
             ksort($ponPortsData);
 
-            $olt['processedStats'] = $stats;
+            $olt['processedStats'] = $overallStats;
             $olt['ponPortsData'] = $ponPortsData;
-            $olt['overallStatus'] = $this->getOverallStatus($stats);
+            $olt['overallStatus'] = $this->getOverallStatus($overallStats);
 
             return $olt;
         }, $olts);
