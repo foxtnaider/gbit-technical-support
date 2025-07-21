@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\OltCommandController;
 use App\Http\Controllers\OltApiController;
+use App\Http\Controllers\OltPerformanceController;
 
 // Redireccionar la ruta principal al login
 Route::redirect('/', '/login');
@@ -55,6 +56,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('api/olt/perform-connect', [OltApiController::class, 'performConnect'])->name('olt-api.perform-connect');
     Route::post('api/olt/perform-send-command', [OltApiController::class, 'performSendCommand'])->name('olt-api.perform-send-command');
     Route::post('api/olt/perform-disconnect', [OltApiController::class, 'performDisconnect'])->name('olt-api.perform-disconnect');
+
+    // Rutas para Rendimiento OLT/ONU
+    Route::get('olt-performance', [OltPerformanceController::class, 'index'])->name('olt-performance.index');
 });
 
 require __DIR__.'/auth.php';
