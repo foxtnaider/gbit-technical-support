@@ -75,7 +75,7 @@
             const ponStatsContainer = document.getElementById('pon-stats');
             
             // Obtener la URL base de la API desde la variable de entorno
-            const apiBaseUrl = '{{ env("API_TRUNK_OLT", "https://whoami-gbit.duckdns.org") }}';
+            const apiBaseUrl = '{{ env("VITE_API_TRUNK_OLT_EXTERNAL", "https://whoami-gbit.duckdns.org") }}';
             
             updateButton.addEventListener('click', function() {
                 const selectedOltOption = oltFilter.options[oltFilter.selectedIndex];

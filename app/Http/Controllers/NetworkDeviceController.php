@@ -181,7 +181,7 @@ class NetworkDeviceController extends Controller
     {
         Log::info('Iniciando proceso de registro para OLT ID: ' . $device->id);
 
-        $apiUrl = env('API_TRUNK_OLT');
+        $apiUrl = env('API_TRUNK_OLT_INTERNAL');
         Log::info('URL de la API obtenida de .env: ' . $apiUrl);
 
         if (!$apiUrl) {

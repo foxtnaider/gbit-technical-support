@@ -324,7 +324,7 @@ class OltCommandController extends Controller
             }
             
             // Obtener la URL base de la API desde las variables de entorno
-            $apiBaseUrl = env('API_TRUNK_OLT');
+            $apiBaseUrl = env('API_TRUNK_OLT_INTERNAL');
             
             if (empty($apiBaseUrl)) {
                 Log::error('La variable de entorno API_TRUNK_OLT no está configurada');
