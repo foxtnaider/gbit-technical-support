@@ -17,7 +17,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
         <!-- Estilos y Scripts compilados -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- @vite(['resources/css/app.css', 'resources/js/app.js']) -->
         <!-- Fallback para entornos sin Vite -->
         @production
             @php
