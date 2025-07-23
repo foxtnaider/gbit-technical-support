@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+
 class OltPerformanceController extends Controller
 {
     /**
@@ -41,7 +42,15 @@ class OltPerformanceController extends Controller
     private function processOltData(array $olts): array
     {
         return array_map(function ($olt) {
-            $overallStats = ['ok' => 0, 'warning' => 0, 'critical' => 0, 'total' => 0];
+            // Inicializar con todos los estados posibles
+            $overallStats = [
+                'ok' => 0, 
+                'warning' => 0, 
+                'critical' => 0, 
+                'high_power_warning' => 0,
+                'offline' => 0,
+                'total' => 0
+            ];
             $ponPortsData = [];
 
             if (!empty($olt['powerOnuStatistics'])) {
@@ -52,7 +61,14 @@ class OltPerformanceController extends Controller
                     if (!isset($ponPortsData[$pon])) {
                         $ponPortsData[$pon] = [
                             'onus' => [],
-                            'stats' => ['ok' => 0, 'warning' => 0, 'critical' => 0, 'total' => 0]
+                            'stats' => [
+                                'ok' => 0, 
+                                'warning' => 0, 
+                                'critical' => 0, 
+                                'high_power_warning' => 0,
+                                'offline' => 0,
+                                'total' => 0
+                            ]
                         ];
                     }
 
@@ -85,29 +101,58 @@ class OltPerformanceController extends Controller
      * Determina el estado de la potencia de una ONU.
      */
     private function getPowerStatus($rxPower): string
-    {
-        if ($rxPower == 0 || $rxPower < -27) {
-            return 'critical';
-        }
-        if ($rxPower >= -27 && $rxPower < -24) {
-            return 'warning';
-        }
-        if ($rxPower >= -24 && $rxPower < -10) {
-            return 'ok';
-        }
-        return 'unknown'; // Para valores fuera de rango o no válidos
+{
+    // Log para ver el valor de entrada
+    Log::info("Depuración getPowerStatus: rxPower de entrada = " . $rxPower);
+
+    // 1. Manejar el estado 'offline'
+    if ($rxPower == 0) {
+        Log::info("Depuración getPowerStatus: rxPower = 0, retornando 'offline'");
+        return 'offline';
     }
+    // 2. Manejar potencias demasiado altas (saturación)
+    if ($rxPower >= -10) {
+        Log::info("Depuración getPowerStatus: rxPower >= -10, retornando 'high_power_warning'");
+        return 'high_power_warning';
+    }
+    // 3. Manejar potencias críticas (extremadamente bajas)
+    if ($rxPower < -27) {
+        Log::info("Depuración getPowerStatus: rxPower < -27, retornando 'critical'");
+        return 'critical';
+    }
+    // 4. Manejar potencias de advertencia (bajas, pero funcionales)
+    if ($rxPower >= -27 && $rxPower < -24) {
+        Log::info("Depuración getPowerStatus: rxPower entre -27 y -24, retornando 'warning'");
+        return 'warning';
+    }
+    // 5. Manejar potencias óptimas ('ok')
+    if ($rxPower >= -24 && $rxPower < -10) {
+        Log::info("Depuración getPowerStatus: rxPower entre -24 y -10, retornando 'ok'");
+        return 'ok';
+    }
+
+    // 6. Si el valor no cae en ninguna categoría
+    Log::info("Depuración getPowerStatus: rxPower fuera de todos los rangos definidos, retornando 'unknown'");
+    return 'unknown';
+}
 
     /**
      * Determina el estado general de la OLT basado en las estadísticas de sus ONUs.
      */
     private function getOverallStatus(array $stats): string
     {
+        // Prioridad de estados: critical > high_power_warning > warning > offline > ok
         if ($stats['critical'] > 0) {
             return 'critical';
         }
+        if ($stats['high_power_warning'] > 0) {
+            return 'high_power_warning';
+        }
         if ($stats['warning'] > 0) {
             return 'warning';
+        }
+        if ($stats['offline'] > 0) {
+            return 'offline';
         }
         return 'ok';
     }
