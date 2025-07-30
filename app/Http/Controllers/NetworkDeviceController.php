@@ -198,6 +198,7 @@ class NetworkDeviceController extends Controller
                     'port' => (int)$device->port,
                     'user' => $device->username,
                     'password' => $device->password,
+                    'ponPorts' => (int)$device->pon_number // Asegurando que sea un entero
                 ]
             ];
 
@@ -213,15 +214,16 @@ class NetworkDeviceController extends Controller
                 $result = $response->json();
                 Log::info('Respuesta exitosa. JSON decodificado: ', (array) $result);
 
-                if (isset($result['results'][0]['action']) && $result['results'][0]['action'] === 'created') {
-                    Log::info('Acción "created" encontrada. Actualizando estado de registro para OLT ID: ' . $device->id);
+                if (isset($result['success']) && $result['success'] === true) {
+                    Log::info('Registro exitoso. Actualizando estado para OLT ID: ' . $device->id);
                     $device->update(['registration_status' => 'registered']);
                     return redirect()->route('network-devices.index')
                         ->with('success', 'OLT registrada exitosamente.');
                 } else {
-                    Log::warning('Respuesta exitosa pero la acción no fue "created" o la estructura es inesperada.');
+                    $errorMessage = $result['message'] ?? 'La OLT no pudo ser registrada';
+                    Log::warning('La API no devolvió success=true: ' . $errorMessage);
                     return redirect()->route('network-devices.index')
-                        ->with('error', 'La OLT ya estaba registrada o hubo un problema.');
+                        ->with('error', $errorMessage);
                 }
             }
 
