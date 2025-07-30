@@ -19,11 +19,9 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     tzdata
 
-# Configurar zona horaria para Venezuela (UTC-4)
+# Configurar zona horaria
 ENV TZ=America/Caracas
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# Configurar la zona horaria directamente en la configuración de PHP
 RUN echo "date.timezone = ${TZ}" > /usr/local/etc/php/conf.d/99-timezone.ini
 
 # Limpiar cache
@@ -43,4 +41,19 @@ RUN mkdir -p /home/$user/.composer && \
 # Establecer directorio de trabajo
 WORKDIR /var/www
 
+# Copiar todos los archivos de la aplicación al contenedor
+COPY . .
+
+# Instalar dependencias de PHP y Node.js, y construir los assets como root
+RUN composer install --no-dev --optimize-autoloader && \
+    npm install && \
+    npm run build && \
+    rm -rf node_modules
+
+# Ajustar permisos para la aplicación
+RUN chown -R $user:$user /var/www
+
+# Cambiar al usuario no-root
 USER $user
+
+# El CMD por defecto de php:8.3-fpm es ["php-fpm"], que iniciará el servidor.

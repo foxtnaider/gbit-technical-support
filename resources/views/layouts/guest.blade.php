@@ -12,19 +12,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Estilos y Scripts compilados -->
-        <!-- @vite(['resources/css/app.css', 'resources/js/app.js']) -->
-        <!-- El script de recarga se ha movido al final del body -->
-        
-        <!-- Fallback para entornos sin Vite -->
-        @production
-            @php
-                $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-            @endphp
-            @if(!app()->isLocal() && empty(config('vite.dev_server_is_running')))
-                <link rel="stylesheet" href="{{ asset('build/' . $manifest['resources/css/app.css']['file']) }}">
-                <script src="{{ asset('build/' . $manifest['resources/js/app.js']['file']) }}" defer></script>
-            @endif
-        @endproduction
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-gbit-blue-800 to-gbit-blue-900">
