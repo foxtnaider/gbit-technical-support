@@ -10,6 +10,13 @@ use App\Http\Controllers\OltCommandController;
 use App\Http\Controllers\OltApiController;
 use App\Http\Controllers\OltPerformanceController;
 
+Route::get('/test-env', function() {
+    return [
+        'API_TRUNK_OLT' => env('API_TRUNK_OLT'),
+        'API_TRUNK_OLT_INTERNAL' => env('API_TRUNK_OLT_INTERNAL'),
+    ];
+});
+
 // Redireccionar la ruta principal al login
 Route::redirect('/', '/login');
 

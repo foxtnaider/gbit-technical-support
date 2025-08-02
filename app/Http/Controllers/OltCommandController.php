@@ -324,19 +324,28 @@ class OltCommandController extends Controller
             }
             
             // Obtener la URL base de la API desde las variables de entorno
-            $apiBaseUrl = env('API_TRUNK_OLT_INTERNAL');
-            
+            // Usar API_TRUNK_OLT si está definida, de lo contrario usar API_TRUNK_OLT_INTERNAL
+            $apiBaseUrl = env('API_TRUNK_OLT', env('API_TRUNK_OLT_INTERNAL'));
+            Log::info('URL base de la API: ' . $apiBaseUrl);
             if (empty($apiBaseUrl)) {
-                Log::error('La variable de entorno API_TRUNK_OLT no está configurada');
+                Log::error('Las variables de entorno API_TRUNK_OLT y API_TRUNK_OLT_INTERNAL no están configuradas');
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error de configuración: API_TRUNK_OLT no está definida'
+                    'message' => 'La configuración de la API no está disponible'
                 ], 500);
             }
             
-            $apiUrl = rtrim($apiBaseUrl, '/') . '/api/statistics/summary';
+            // Asegurarse de que la URL no termine con /
+            $apiBaseUrl = rtrim($apiBaseUrl, '/');
+            $apiUrl = "{$apiBaseUrl}/api/olt-statistics";
             
-            Log::info('Consultando estadísticas de ONUs', ['url' => $apiUrl]);
+            Log::info('Consultando estadísticas de ONUs', [
+                'url' => $apiUrl,
+                'env' => [
+                    'api_trunk_olt' => env('API_TRUNK_OLT'),
+                    'api_trunk_olt_internal' => env('API_TRUNK_OLT_INTERNAL')
+                ]
+            ]);
             
             // Realizar la petición a la API externa
             $response = Http::timeout(15)->get($apiUrl);
